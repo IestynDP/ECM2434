@@ -127,5 +127,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Login Redirects (tells Django where to direct users on Login/Logout)
 
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "/home/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"

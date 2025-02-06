@@ -2,5 +2,11 @@
 <form method="post">
     {% csrf_token %} <!protects against security attacks (Cross-Site Request Forgery)>
     {{ form.as_p }} <!automatically generates form fields using Django’s form system>
-    <button type="submit">Login</button>
+    <button type="submit" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 5px">
+        Login
+    </button>
+
+    <a href="{% url 'register' %}" style="background-color: #008CBA; color: white; padding: 10px 20px; text-decoration: none; display: inline-block; border-radius: 5px; margin-left: 10px;">
+        Create Account
+    </a>
 </form>
