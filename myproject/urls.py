@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
+from debug_toolbar.toolbar import debug_toolbar_urls
 
 
 
@@ -28,4 +29,4 @@ urlpatterns = [
     path('admin/', admin.site.urls), # Django admin panel
     path('accounts/', include('accounts.urls')), # Include accounts app URLs
     path("", redirect_to_login),  # Redirect root URL to login page
-]
+] + debug_toolbar_urls()
