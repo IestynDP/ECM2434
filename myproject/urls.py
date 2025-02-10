@@ -26,6 +26,6 @@ def redirect_to_login(request):
 # url routing
 urlpatterns = [
     path('admin/', admin.site.urls), # Django admin panel
-    path('accounts/', include('accounts.urls')), # Include accounts app URLs
+    path('accounts/', include('accounts.urls')), # Include Sustainability_App app URLs
     path("", redirect_to_login),  # Redirect root URL to login page
 ]
