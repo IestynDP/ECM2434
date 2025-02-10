@@ -34,9 +34,13 @@ def home(request):
         "Using **eco-friendly search engines** like Ecosia helps plant trees with each search! 🌱🔍",
         "By 2050, there will be more plastic in the ocean than fish if we don’t take action! 🌊",
     ]
-    
     fact = random.choice(fun_facts)
     return render(request, "home.html", {"fact": fact})
+
+#Points view
+@login_required
+def points(request):
+    return render(request,"points.html")
 
 # Register View
 def register(request):
