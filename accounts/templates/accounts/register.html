@@ -1,6 +1,0 @@
-<h2>Register</h2>
-<form method="post">
-    {% csrf_token %} <!protects against security attacks (Cross-Site Request Forgery)>
-    {{ form.as_p }} <!automatically generates form fields using Django’s form system.>
-    <button type="submit">Register</button>
-</form>
