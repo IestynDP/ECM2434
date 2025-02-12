@@ -1,3 +1,4 @@
 Django users
 
 daf, TestPassword
+Iestyn, AdminPassword (admin account)
