@@ -37,7 +37,9 @@ def home(request):
     
     fact = random.choice(fun_facts)
     return render(request, "home.html", {"fact": fact})
-
+#adds points page
+def points(request):
+    return render(request,"points.html")
 # Register View
 def register(request):
     if request.method == "POST":
