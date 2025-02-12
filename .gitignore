@@ -1,0 +1,57 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+ENV/
+env/
+
+# Django stuff
+#db.sqlite3
+#*.sqlite3
+
+# Logs
+logs/
+*.log
+*.out
+*.err
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-workspace
+
+# Environment variables
+.env
+*.env
+
+# Static and media files
+#staticfiles/
+#media/
+
+# Migrations (optional, but useful to exclude generated migrations)
+**/migrations/*.pyc
+**/migrations/*.py, !**/migrations/__init__.py
+
+# Compiled Python files
+*.pyc
+*.pyo
+*.pyd
+
+# Coverage and test reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+hypothesis/
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
