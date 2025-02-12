@@ -6,10 +6,10 @@ class account(models.Model):
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
     email = models.CharField(max_length=100)
-    points = models.IntegerField()
+    points = models.IntegerField(default=0)
     accountType = models.CharField(max_length=10)
     # profile picture
 
 class tasks(models.Model):
     taskID = models.IntegerField(primary_key=True)
-    #tasks 
+    #tasks
