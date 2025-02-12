@@ -1,26 +1,57 @@
-# Ignore virtual environment
-venv/
-
-# Ignore compiled Python files
+# Byte-compiled / optimized / DLL files
 __pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+ENV/
+env/
+
+# Django stuff
+#db.sqlite3
+#*.sqlite3
+
+# Logs
+logs/
+*.log
+*.out
+*.err
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-workspace
+
+# Environment variables
+.env
+*.env
+
+# Static and media files
+#staticfiles/
+#media/
+
+# Migrations (optional, but useful to exclude generated migrations)
+**/migrations/*.pyc
+**/migrations/*.py, !**/migrations/__init__.py
+
+# Compiled Python files
 *.pyc
 *.pyo
 *.pyd
 
-# Ignore the SQLite database (Should be removed in production, is not best practice to upload a database file to github)
-#db.sqlite3
-#db.sqlite3-journal
+# Coverage and test reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+hypothesis/
 
-# Ignore Django secret settings (if stored in .env)
-.env
-
-# Ignore IDE settings 
-.idea/
-.vscode/
-
-# Ignore log files
-*.log
-
-# Ignore migration cache 
-**/migrations/*.pyc
-**/migrations/__pycache__/
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
