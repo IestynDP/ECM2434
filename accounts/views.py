@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from .models import account 
 
 
 @login_required # Only logged in users can see the home page
@@ -37,9 +38,22 @@ def home(request):
     
     fact = random.choice(fun_facts)
     return render(request, "home.html", {"fact": fact})
-#adds points page
-def points(request):
-    return render(request,"points.html")
+
+# Points View
+@login_required
+def points_view(request):
+    try:
+        user_account = account.objects.get(user=request.user)  # Get the logged-in user's account
+    except account.DoesNotExist:
+        user_account = None  # If no account exists, handle gracefully
+# Check if the button was clicked
+    if request.method == "POST":
+        user_account.points += 1  # Increase points by 1
+        user_account.save()
+        return redirect("points")  # Reload the page to show updated points
+
+    return render(request, "points.html", {"user_account": user_account})  # Pass the object to the template
+
 # Register View
 def register(request):
     if request.method == "POST":

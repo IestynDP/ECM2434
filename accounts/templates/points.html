@@ -5,9 +5,19 @@
     <title>Points</title>
 </head>
 <body>
-<h1>Your Points</h1>
-<p>Hi, {{user.username}}!</p> 
-<p>You have {{accounts.points}} points.</p>
-<button type="button" >I turned off a light</button>
+    <h1>Your Points</h1>
+    <p>Hi, {{ user.username }}!</p>
+
+    {% if user_account %}
+        <p>You have {{ user_account.points }} points.</p>
+    {% else %}
+        <p>You have 0 points.</p>
+    {% endif %}
+
+    <!-- Button inside a form to send a POST request -->
+    <form method="post">
+        {% csrf_token %} <!-- Protects against CSRF attacks -->
+        <button type="submit">I turned off a light</button>
+    </form>
 </body>
 </html>
