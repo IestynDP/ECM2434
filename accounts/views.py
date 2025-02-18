@@ -1,6 +1,7 @@
 import random
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from .models import account 
@@ -86,16 +87,28 @@ def logout_view(request):
 
 # Profile View
 @login_required
-def profile_view(request):
-    user = request.user
+def profile_view(request, username=None):
+    if username is None:
+        # Redirect to the logged-in user's profile page
+        return redirect('profile_with_username', username=request.user.username)
+    
+    user = get_object_or_404(User, username=username)  # Fetch user by username
     user_account, created = account.objects.get_or_create(user=user)  # Ensure account exists
 
     return render(request, "accounts/profile.html", {
         "user": user,
         "user_account": user_account,
     })
+    
+# Profile Searching
+@login_required
+def search_users(request):
+    query = request.GET.get("q")  # Get search input
+    users = User.objects.filter(username__icontains=query) if query else None  # Case-insensitive search
 
+    return render(request, "accounts/search_results.html", {"users": users, "query": query})
 
+# Editing Profiles
 @login_required
 def edit_profile(request):
     user = request.user
