@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h3>{{ user.username }}'s Profile</h3>
+    {% if user_account %}
+        <!-- Display Avatar if Uploaded -->
+        {% if user_account.avatar %}
+        <img src="{{ user_account.avatar.url }}" alt="Profile Picture" width="150">
+        {% else %}
+        <p>No profile picture uploaded.</p>
+        {% endif %}
+    {% endif %}
+
+    <!-- User Personal Information -->
+    <p><strong>First Name:</strong> {{ user.first_name }}</p>
+    <p><strong>Last Name:</strong> {{ user.last_name }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+
+    <!-- User Account Information -->
+    {% if user_account %}
+        <p><strong>Points:</strong> {{ user_account.points }}</p>
+        <p><strong>Bio:</strong> {{ user_account.bio }}</p>
+
+
+    {% else %}
+        <p><strong>Points:</strong> 0</p>
+        <p><strong>Bio:</strong> No bio set.</p>
+    {% endif %}
+
+    <!-- Badges Section -->
+    <p><strong>Badges:</strong> (There are no badges yet)</p>
+
+    <!-- Edit Profile Button -->
+    <a href="{% url 'edit_profile' %}" style="display: inline-block; padding: 8px 12px; background: #008CBA; color: white; text-decoration: none; border-radius: 5px;">Edit Profile</a>
+
+    <form method="GET" action="{% url 'search_users' %}">
+        <input type="text" name="q" placeholder="Search for a user..." required>
+        <button type="submit">Search</button>
+    </form>
+    
+{% endblock %}
