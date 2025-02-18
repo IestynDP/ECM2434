@@ -4,6 +4,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from .models import account 
+from .forms import UserProfileForm, AccountForm
 
 
 @login_required # Only logged in users can see the home page
@@ -57,14 +58,14 @@ def points_view(request):
 # Register View
 def register(request):
     if request.method == "POST":
-        form = UserCreationForm(request.POST)  # Create form instance with submitted data
+        form = UserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save() 
-            login(request, user)  
-            return redirect("home")
+            user = form.save()
+            login(request, user)  # Log the user in after registration
+            return redirect("home")  # Redirect to homepage (update as needed)
     else:
-        form = UserCreationForm()  # Display an empty form for GET requests
-    return render(request, "accounts/register.html", {"form": form})  
+        form = UserCreationForm()
+    return render(request, "accounts/register.html", {"form": form})
 
 # Login View
 def login_view(request):
@@ -82,3 +83,38 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect("login")
+
+# Profile View
+@login_required
+def profile_view(request):
+    user = request.user
+    user_account, created = account.objects.get_or_create(user=user)  # Ensure account exists
+
+    return render(request, "accounts/profile.html", {
+        "user": user,
+        "user_account": user_account,
+    })
+
+
+@login_required
+def edit_profile(request):
+    user = request.user
+    user_account, created = account.objects.get_or_create(user=user)  # Ensure account exists
+
+    if request.method == "POST":
+        user_form = UserProfileForm(request.POST, instance=user)
+        account_form = AccountForm(request.POST, request.FILES, instance=user_account)
+
+        if user_form.is_valid() and account_form.is_valid():
+            user_form.save()
+            account_form.save()
+            return redirect("profile")  # Redirect to profile page after saving
+
+    else:
+        user_form = UserProfileForm(instance=user)
+        account_form = AccountForm(instance=user_account)
+
+    return render(request, "accounts/edit_profile.html", {
+        "user_form": user_form,
+        "account_form": account_form,
+    })
