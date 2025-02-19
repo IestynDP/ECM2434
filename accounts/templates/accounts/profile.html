@@ -27,7 +27,7 @@
 
     <!-- Show Edit Profile button ONLY if the logged-in user is viewing their own profile -->
     {% if user == request.user %}
-        <a href="{% url 'edit_profile' %}" 
+        <a href="{% url 'edit_profile_with_username' username=user.username %}"
             style="display: inline-block; padding: 8px 12px; background: #008CBA; color: white; text-decoration: none; border-radius: 5px;">
             Edit Profile
         </a>
