@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Points</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block content %}
     <h1>Your Points</h1>
     <p>Hi, {{ user.username }}!</p>
 
@@ -19,5 +15,4 @@
         {% csrf_token %} <!-- Protects against CSRF attacks -->
         <button type="submit">I turned off a light</button>
     </form>
-</body>
-</html>
+{% endblock %}
