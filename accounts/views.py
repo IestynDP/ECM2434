@@ -110,8 +110,14 @@ def search_users(request):
 
 # Editing Profiles
 @login_required
-def edit_profile(request):
-    user = request.user
+def edit_profile(request, username=None):
+    if username is None:
+        username = request.user.username  # Set the username to the logged-in user's username
+
+    if username != request.user.username:
+        return redirect('profile_with_username', username=request.user.username)
+
+    user = get_object_or_404(User, username=username)  # Fetch user by username
     user_account, created = account.objects.get_or_create(user=user)  # Ensure account exists
 
     if request.method == "POST":
@@ -121,7 +127,7 @@ def edit_profile(request):
         if user_form.is_valid() and account_form.is_valid():
             user_form.save()
             account_form.save()
-            return redirect("profile")  # Redirect to profile page after saving
+            return redirect('profile_with_username', username=user.username)
 
     else:
         user_form = UserProfileForm(instance=user)
@@ -130,4 +136,5 @@ def edit_profile(request):
     return render(request, "accounts/edit_profile.html", {
         "user_form": user_form,
         "account_form": account_form,
+        "user": user,
     })
