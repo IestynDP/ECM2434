@@ -1,0 +1,12 @@
+<h2>Edit Profile</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <h3>Personal Information</h3>
+    {{ user_form.as_p }}
+
+    <h3>Account Details</h3>
+    {{ account_form.as_p }}
+
+    <button type="submit">Save Changes</button>
+</form>

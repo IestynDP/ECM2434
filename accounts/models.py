@@ -6,6 +6,8 @@ from django.contrib.auth.models import User
 class account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     points = models.IntegerField(default=0)
+    avatar = models.ImageField(default='default.jpg', upload_to='profile_images')
+    bio = models.TextField(default=" ")
 
 class tasks(models.Model):
     taskID = models.IntegerField(primary_key=True)
