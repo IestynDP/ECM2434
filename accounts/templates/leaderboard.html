@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>🏆 Sustainability Leaderboard</h1>
+    <p>See who is leading in sustainability efforts!</p>
+
+    <table border="1">
+        <tr>
+            <th>Rank</th>
+            <th>Username</th>
+            <th>Points</th>
+        </tr>
+        {% for player in top_players %}
+        <tr>
+            <td>#{{ forloop.counter }}</td>
+            <td>{{ player.user.username }}</td>
+            <td>{{ player.points }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No users ranked yet.</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+{% endblock %}
