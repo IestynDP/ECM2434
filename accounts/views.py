@@ -56,6 +56,13 @@ def points_view(request):
 
     return render(request, "points.html", {"user_account": user_account})  # Pass the object to the template
 
+@login_required
+def leaderboard(request):
+    # top 10 users sorted by points in descending order
+    top_players = account.objects.order_by('-points')[:10]
+
+    return render(request, "leaderboard.html", {"top_players": top_players})
+
 # Register View
 def register(request):
     if request.method == "POST":
