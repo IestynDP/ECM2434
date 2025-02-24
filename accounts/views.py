@@ -3,11 +3,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from django.utils.timezone import now
 from .models import account, Restaurant, CheckIn
 from .forms import UserProfileForm, AccountForm, RestaurantForm
+
+# we can use this for a wide variety of things that we only want admins to be able to do
+def is_admin(user):
+    return user.is_staff  # Only allow staff/admin users
+
 
 
 @login_required # Only logged in users can see the home page
@@ -180,14 +185,15 @@ def download_data(request):
 # ALL RESTAURANT CODE GOES BETWEEN HERE
 
 @login_required
+@user_passes_test(is_admin)
 def add_restaurant(request):
     if request.method == "POST":
         form = RestaurantForm(request.POST)
         if form.is_valid():
             restaurant = form.save(commit=False)
-            restaurant.owner = request.user  # Set the restaurant owner
+            restaurant.owner = request.user  # Assign the logged-in admin as the owner
             restaurant.save()
-            return redirect("restaurant_list")  # Redirect to the restaurant list page
+            return redirect("restaurant_list")
     else:
         form = RestaurantForm()
 
