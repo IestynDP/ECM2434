@@ -1,8 +1,7 @@
-from django.shortcuts import render
-from .models import Category, Question, Answer
+from django.shortcuts import render, get_object_or_404
+from .models import Category, Question, Answer, UserQuizScore
 from django.http import HttpRequest, HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from accounts.models import account  # Import the account model
 
 
@@ -38,15 +37,32 @@ def submit_quiz(request, category_id):
 
         if score >= 90:
             rank = "Well done! You are a genius!"
-        elif score < 20:
-            rank = "Ohh, try again!"
+            points = 5
+        elif score >= 70:
+            rank = "Great job!"
+            points = 4
+        elif score >= 50:
+            rank = "Good effort!"
+            points = 3
+        elif score >= 30:
+            rank = "Keep trying!"
+            points = 2
+        elif score >= 10:
+            rank = "Needs improvement!"
+            points = 1
         else:
-            rank = "Not bad! Keep it up!"
+            rank = "Ohh, try again!"
+            points = 0
 
-        # Update user's points
-        user_account, created = account.objects.get_or_create(user=request.user)
-        user_account.points += 1
-        user_account.save()
+        # Update user's points based on improved performance
+        user_account = get_object_or_404(account, user=request.user)
+        user_quiz_score, created = UserQuizScore.objects.get_or_create(user=request.user, category_id=category_id)
+        if score > user_quiz_score.highest_score:
+            additional_points = points - user_quiz_score.highest_score // 20
+            user_account.points += additional_points
+            user_account.save()
+            user_quiz_score.highest_score = score
+            user_quiz_score.save()
 
         context = {
             'score': score,
