@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Privacy Policy</h2>
+    <p>Last updated: {{ last_updated|default:"February 2025" }}</p>
+
+    <h3>1. Introduction</h3>
+    <p>Welcome to our sustainability gamification platform. Your privacy is important to us, and we are committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information in compliance with the General Data Protection Regulation (GDPR).</p>
+
+    <h3>2. What Data We Collect</h3>
+    <p>When you use our platform, we may collect the following data:</p>
+    <ul>
+        <li><strong>Account Information:</strong> Username, email address, first name, last name.</li>
+        <li><strong>Profile Information:</strong> Bio, profile picture/avatar, sustainability points, badges earned.</li>
+        <li><strong>Activity Data:</strong> Quizzes taken, actions completed (e.g., turning off lights, visiting recycling stations).</li>
+        <li><strong>Location Data:</strong> If you enable GPS features (e.g., tracking visits to eco-friendly locations), we collect location data to verify sustainability activities.</li>
+        <li><strong>Cookies & Session Data:</strong> We use cookies to enhance user experience, store login sessions, and track leaderboard progress.</li>
+    </ul>
+
+    <h3>3. Why We Collect This Data</h3>
+    <p>We collect data to:</p>
+    <ul>
+        <li>Enable account registration and secure authentication.</li>
+        <li>Track sustainability achievements and user engagement.</li>
+        <li>Provide a personalized experience (e.g., custom avatars, badges).</li>
+        <li>Improve the platform based on usage analytics.</li>
+        <li>Ensure GDPR compliance and allow users to control their data.</li>
+    </ul>
+
+    <h3>4. How We Secure Your Data</h3>
+    <p>We implement the following security measures:</p>
+    <ul>
+        <li>All passwords are stored securely using **Django’s built-in hashing system (Argon2/PBKDF2)**.</li>
+        <li>Personal data is encrypted where necessary (e.g., user bios can be encrypted in the database).</li>
+        <li>Session cookies are used for authentication, and CSRF protection is enabled.</li>
+        <li>Data backups are secured and stored in GDPR-compliant environments.</li>
+    </ul>
+
+    <h3>5. Your Rights Under GDPR</h3>
+    <p>As a user, you have the following rights:</p>
+    <ul>
+        <li><strong>Right to Access:</strong> You can request a copy of your stored data at any time.</li>
+        <li><strong>Right to Rectification:</strong> You can update or correct your profile information through the "Edit Profile" page.</li>
+        <li><strong>Right to Be Forgotten:</strong> You can delete your account and all associated data permanently.</li>
+        <li><strong>Right to Data Portability:</strong> You can download your data in a structured format.</li>
+        <li><strong>Right to Object:</strong> You can opt out of certain data collection practices.</li>
+    </ul>
+
+    <h3>6. How to Manage Your Data</h3>
+    <p>You can manage your data through the following options:</p>
+    <ul>
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'edit_profile_with_username' username=request.user.username %}">Edit your profile</a> to update personal information.
+        {% else %}
+            <p><a href="{% url 'login' %}">Log in</a> to edit your profile.</p>
+        {% endif %}
+        <li><a href="{% url 'download_data' %}">Download your data</a> for personal records.</li>
+        <li><a href="{% url 'delete_account' %}">Delete your account</a> if you wish to permanently remove your data.</li>
+    </ul>
+
+    <h3>7. Cookies & Tracking</h3>
+    <p>We use cookies to store login sessions and track in-app progress. By continuing to use the site, you agree to our <a href="{% url 'privacy_policy' %}">Cookie Policy</a>.</p>
+
+    <h3>8. Contact Information</h3>
+    <p>If you have any questions about this Privacy Policy or your data rights, please contact us at: <a href="mailto:support@example.com">support@example.com</a>.</p>
+
+    <h3>9. Changes to This Policy</h3>
+    <p>We may update this Privacy Policy periodically. If we make significant changes, we will notify users through email or a site notification.</p>
+{% endblock %}

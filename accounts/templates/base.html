@@ -14,6 +14,7 @@
             <a href="{% url 'profile_with_username' username=user.username %}">Profile</a>
             <a href="{% url 'logout' %}">Logout</a>
             <a href="{% url 'leaderboard' %}">Leaderboard</a>
+            <a href="{% url 'quiz_home' %}">Quizzes</a>
         </nav>
     </header>
 
@@ -24,5 +25,41 @@
     <footer>
         <p>Made with 🌱 at the University of Exeter</p>
     </footer>
+<!-- Cookie Consent Banner -->
+<div id="cookie-banner" style="
+    display: none; 
+    position: fixed; 
+    bottom: 0; 
+    width: 100%; 
+    background: #333; 
+    color: white; 
+    padding: 10px; 
+    text-align: center;">
+    <p>
+        This site uses cookies to enhance your experience. By continuing to use the site, you agree to our 
+        <a href="{% url 'privacy_policy' %}" style="color: #FFD700;">Privacy Policy</a>.
+        <button onclick="acceptCookies()" style="background: #FFD700; color: black; padding: 5px 10px; margin-left: 10px; border: none; cursor: pointer;">
+            Accept
+        </button>
+    </p>
+</div>
+
+<script>
+    // Function to check if the user has accepted cookies
+    function checkCookieConsent() {
+        if (!localStorage.getItem("cookie_consent")) {
+            document.getElementById("cookie-banner").style.display = "block";
+        }
+    }
+
+    // Function to accept cookies
+    function acceptCookies() {
+        localStorage.setItem("cookie_consent", "true");
+        document.getElementById("cookie-banner").style.display = "none";
+    }
+
+    // Check cookie consent on page load
+    checkCookieConsent();
+</script>
 </body>
 </html>

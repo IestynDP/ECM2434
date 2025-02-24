@@ -1,3 +1,4 @@
+
 <head>
     <style>
         *{
@@ -56,9 +57,14 @@
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
+            <label>
+                <input type="checkbox" name="gdpr_consent" required>
+                I agree to the <a href="{% url 'privacy_policy' %}">Privacy Policy</a>.
+            </label>
             <button type="submit" style="background-color: #4CAF50; margin-top:30px; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 5px">
                 Register
             </button>
+            
         </form>
     </div>
 </main>
