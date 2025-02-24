@@ -194,7 +194,7 @@ def add_restaurant(request):
     return render(request, "restaurants/add_restaurant.html", {"form": form})
 
 def restaurant_list(request):
-    restaurants = Restaurant.objects.filter(verified=True)  # Only show verified restaurants
+    restaurants = Restaurant.objects.all  # Only show verified restaurants
     return render(request, "restaurants/restaurant_list.html", {"restaurants": restaurants})
 
 @login_required
