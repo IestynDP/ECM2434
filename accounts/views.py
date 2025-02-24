@@ -4,6 +4,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from .models import account 
 from .forms import UserProfileForm, AccountForm
 
@@ -145,3 +146,31 @@ def edit_profile(request, username=None):
         "account_form": account_form,
         "user": user,
     })
+    
+
+@login_required
+def delete_account(request):
+    user = request.user
+    user.delete()  # Completely removes user data
+    logout(request)
+    return redirect("home")  # Redirect to home page
+
+def privacy_policy(request):
+    return render(request, "privacy_policy.html")
+
+@login_required
+def download_data(request):
+    """Allows users to download their personal data in JSON format."""
+    user = request.user
+    user_account = account.objects.get(user=user)
+
+    data = {
+        "username": user.username,
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "bio": user_account.bio if user_account else "",
+        "points": user_account.points if user_account else 0,
+    }
+
+    return JsonResponse(data, json_dumps_params={"indent": 2})
