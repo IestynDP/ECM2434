@@ -5,7 +5,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from .models import account, Restaurant
+from django.utils.timezone import now
+from .models import account, Restaurant, CheckIn
 from .forms import UserProfileForm, AccountForm, RestaurantForm
 
 
@@ -196,7 +197,27 @@ def restaurant_list(request):
     restaurants = Restaurant.objects.filter(verified=True)  # Only show verified restaurants
     return render(request, "restaurants/restaurant_list.html", {"restaurants": restaurants})
 
+@login_required
+def check_in(request, restaurant_id):
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+    user = request.user
 
+    # Check if the user has already checked in today
+    today_checkin = CheckIn.objects.filter(user=user, restaurant=restaurant, timestamp__date=now().date()).exists()
+
+    if today_checkin:
+        # Prevent multiple check-ins in a single day
+        return render(request, "restaurants/check_in_failed.html", {"restaurant": restaurant})
+
+    # Record the check-in
+    CheckIn.objects.create(user=user, restaurant=restaurant)
+
+    # Award points to the user
+    user_account, created = account.objects.get_or_create(user=user)
+    user_account.points += 10  # Award 10 points per check-in (can adjust later)
+    user_account.save()
+
+    return render(request, "restaurants/check_in_success.html", {"restaurant": restaurant})
 
 
 # AND HERE (just for organisation purposes ty ty, i'll tidy the rest up at some point)
