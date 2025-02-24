@@ -9,6 +9,9 @@ class account(models.Model):
     avatar = models.ImageField(default='default.jpg', upload_to='profile_images')
     bio = models.TextField(default=" ")
 
+    def __str__(self):
+        return self.user.username
+
 class tasks(models.Model):
     taskID = models.IntegerField(primary_key=True)
     #tasks
