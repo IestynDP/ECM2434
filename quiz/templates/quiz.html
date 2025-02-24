@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ category.name }} Quiz</title>
+</head>
+<body>
+    <h1>{{ category.name }} Quiz</h1>
+    <form method="post" action="{% url 'submit_quiz' category.id %}">
+        {% csrf_token %}
+        {% for question in questions %}
+            <fieldset>
+                <legend>{{ question.text }}</legend>
+                {% for answer in question.answer_set.all %}
+                    <input type="radio" name="{{ question.id }}" value="{{ answer.id }}"> {{ answer.text }}<br>
+                {% endfor %}
+            </fieldset>
+        {% endfor %}
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
