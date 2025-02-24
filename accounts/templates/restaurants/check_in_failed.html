@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Check-In Failed</h2>
+    <p>You have already checked into {{ restaurant.name }} today.</p>
+    <a href="{% url 'restaurant_list' %}">Go Back to Restaurants</a>
+{% endblock %}
