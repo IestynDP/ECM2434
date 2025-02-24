@@ -64,8 +64,8 @@ def submit_quiz(request, category_id):
             user_quiz_score.highest_score = score
             user_quiz_score.save()
 
-        context = {
-            'score': score,
-            'rank': rank
-        }
+    context = {
+        'score': score,
+        'rank': rank
+    }
     return render(request, 'result.html', context)
