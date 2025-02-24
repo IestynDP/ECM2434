@@ -4,8 +4,9 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from .models import account 
-from .forms import UserProfileForm, AccountForm
+from django.http import JsonResponse
+from .models import account, Restaurant
+from .forms import UserProfileForm, AccountForm, RestaurantForm
 
 
 @login_required # Only logged in users can see the home page
@@ -145,3 +146,57 @@ def edit_profile(request, username=None):
         "account_form": account_form,
         "user": user,
     })
+    
+
+@login_required
+def delete_account(request):
+    user = request.user
+    user.delete()  # Completely removes user data
+    logout(request)
+    return redirect("home")  # Redirect to home page
+
+def privacy_policy(request):
+    return render(request, "privacy_policy.html")
+
+@login_required
+def download_data(request):
+    """Allows users to download their personal data in JSON format."""
+    user = request.user
+    user_account = account.objects.get(user=user)
+
+    data = {
+        "username": user.username,
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "bio": user_account.bio if user_account else "",
+        "points": user_account.points if user_account else 0,
+    }
+
+    return JsonResponse(data, json_dumps_params={"indent": 2})
+
+
+# ALL RESTAURANT CODE GOES BETWEEN HERE
+
+@login_required
+def add_restaurant(request):
+    if request.method == "POST":
+        form = RestaurantForm(request.POST)
+        if form.is_valid():
+            restaurant = form.save(commit=False)
+            restaurant.owner = request.user  # Set the restaurant owner
+            restaurant.save()
+            return redirect("restaurant_list")  # Redirect to the restaurant list page
+    else:
+        form = RestaurantForm()
+
+    return render(request, "restaurants/add_restaurant.html", {"form": form})
+
+def restaurant_list(request):
+    restaurants = Restaurant.objects.filter(verified=True)  # Only show verified restaurants
+    return render(request, "restaurants/restaurant_list.html", {"restaurants": restaurants})
+
+
+
+
+# AND HERE (just for organisation purposes ty ty, i'll tidy the rest up at some point)
