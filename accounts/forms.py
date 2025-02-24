@@ -6,7 +6,11 @@ class UserProfileForm(forms.ModelForm):
     first_name = forms.CharField(required=False, widget=forms.TextInput(attrs={"class": "form-control"}))
     last_name = forms.CharField(required=False, widget=forms.TextInput(attrs={"class": "form-control"}))
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={"class": "form-control"}))
-
+    gdpr_consent = forms.BooleanField(
+        required=True,
+        label="I agree to the Privacy Policy",
+        error_messages={'required': 'You must accept the Privacy Policy to register.'}
+    )
     class Meta:
         model = User
         fields = ["first_name", "last_name", "email"]

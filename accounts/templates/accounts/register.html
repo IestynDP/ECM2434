@@ -2,5 +2,9 @@
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
+    <label>
+        <input type="checkbox" name="gdpr_consent" required>
+        I agree to the <a href="{% url 'privacy_policy' %}">Privacy Policy</a>.
+    </label>
     <button type="submit">Register</button>
 </form>

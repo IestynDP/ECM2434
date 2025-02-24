@@ -38,4 +38,15 @@
         <input type="text" name="q" placeholder="Search for a user..." required>
         <button type="submit">Search</button>
     </form>
+
+    <br> <br>
+
+    <form method="POST" action="{% url 'download_data' %}">
+        {% csrf_token %}
+        <button type="submit" style="background-color: blue; color: white;">Download Data</button>
+    </form>
+    <form method="POST" action="{% url 'delete_account' %}">
+        {% csrf_token %}
+        <button type="submit" style="background-color: red; color: white;">Delete Account</button>
+    </form>
 {% endblock %}
