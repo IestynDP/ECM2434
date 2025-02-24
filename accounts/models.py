@@ -12,6 +12,7 @@ class account(models.Model):
 class tasks(models.Model):
     taskID = models.IntegerField(primary_key=True)
     #tasks
+    
 class Restaurant(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)  # Business owner
     name = models.CharField(max_length=255, unique=True)
