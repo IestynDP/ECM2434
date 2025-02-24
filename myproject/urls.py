@@ -30,6 +30,7 @@ urlpatterns = [
     path('admin/', admin.site.urls), # Django admin panel
     path('accounts/', include('accounts.urls')), # Include Sustainability_App app URLs
     path("", redirect_to_login),  # Redirect root URL to login page
-        path("accounts/", include("accounts.urls")),
+    path("accounts/", include("accounts.urls")),
+    path('quiz/', include('quiz.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
