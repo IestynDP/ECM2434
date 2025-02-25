@@ -16,5 +16,9 @@
     </script>
     <nav> 
         <a href="{% url 'points' %}">Points</a>
+        <br><br>
+        {% if request.user.is_staff %}
+            <a href="{% url 'admin:index' %}" class="admin-button">Go to Admin Panel</a>
+        {% endif %}
     </nav>
 {% endblock %}
