@@ -1,5 +1,32 @@
-{% extends "base.html" %}
 
+{% load static %}
+<style>
+    .main {
+  display: grid;
+  padding: 40px;
+  width: 400px;
+  border-radius: 20px;
+
+  align-items: center;
+  justify-items: center;
+
+  grid-template-columns: 9fr;
+  grid-template-rows: 9fr;
+}
+
+.avatarbase {
+  width: 1000px;
+
+  grid-area: 2 / 2;
+}
+
+.hat {
+  width:50px;
+    height:60px;
+  grid-area: 1 / 1;
+
+}
+</style>
 {% block content %}
     <h1>Your Points</h1>
     <p>Hi, {{ user.username }}!</p>
@@ -13,6 +40,24 @@
     <!-- Button inside a form to send a POST request -->
     <form method="post">
         {% csrf_token %} <!-- Protects against CSRF attacks -->
-        <button type="submit">I turned off a light</button>
+        <button type="submit" name="action" value="addpoints">I turned off a light</button>
     </form>
+    <h1>Purchase Items</h1>
+    <form method="post">
+        {% csrf_token %}
+        <h3>Hats</h3>
+         <button type="submit" name="action" value ="purchase tophat">Purchase a tophat</button>
+    </form>
+    <!--Equipping Items-->
+    <h1>Equip Items</h1>
+    <form method="post">
+        <h3>Hats</h3>
+        {% csrf_token %}
+        <button type="submit" name="action" value ="equip tophat">Equip a tophat</button>
+    </form>
+    <h1>My Avatar</h1>
+    <div class="main">
+        <div class="avatarbase"><img src="{% static "AvatarBase.PNG" %}"></div>
+        <div class="hat"><img src="{% static hat %}"></div>
+    </div>
 {% endblock %}
