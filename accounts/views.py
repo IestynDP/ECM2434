@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from .models import account 
+from .models import account,items, purchases
 from .forms import UserProfileForm, AccountForm
 
 
@@ -45,17 +45,72 @@ def home(request):
 # Points View
 @login_required
 def points_view(request):
+    #setting up the querysets of dbs relating to the user
     try:
         user_account = account.objects.get(user=request.user)  # Get the logged-in user's account
+        user_items = items.objects.all() #get item list
+        user_purchases = purchases.objects.filter(user=user_account)
+        hatslot = "nohat.PNG"
     except account.DoesNotExist:
         user_account = None  # If no account exists, handle gracefully
+    # Updating the avatar to reflect equipped cosmetics
+    try:
+        equipped = user_purchases.filter(equipState=True)
+        for x in equipped:
+            if x.item.itemslot == "hat": #currently only one hat exists. more hats and other types will be implemented later
+                hatslot = x.item.itemimage
+    except items.DoesNotExist: #handles unexpected errors such as and item not existing
+        pass
 # Check if the button was clicked
     if request.method == "POST":
-        user_account.points += 1  # Increase points by 1
-        user_account.save()
-        return redirect("points")  # Reload the page to show updated points
-
-    return render(request, "points.html", {"user_account": user_account})  # Pass the object to the template
+        action = request.POST.get("action")
+        #for handling points for demonstrative purposes - will be removed once actual point gains are added
+        if action == "addpoints":
+            user_account.points += 5  # Increase points by 5
+            user_account.save()
+        else:
+            action_request = action.split(" ")
+            if action_request[0] == "purchase": #purchasing an item
+                try:
+                    purchaseitem = items.objects.get(itemName=action_request[1]) #item reference
+                    #checking if the user has enough points to buy the item
+                    if purchaseitem.itemCost > user_account.points:
+                        print("not enough points")
+                        pass
+                    #if they do, proceed
+                    if purchaseitem.itemCost <= user_account.points:
+                        if not user_purchases.filter(item=purchaseitem).exists(): #checking they have not already bought the item
+                            try:
+                                purchases.objects.create(user=user_account,item=purchaseitem)
+                                user_account.points -= purchaseitem.itemCost
+                                purchases.save()
+                                user_account.save()
+                            except: #handles unexpected failures
+                                pass
+                    else:
+                        print("item already owned")
+                except items.DoesNotExist: #if for whatever reason there isn't a corresponding item
+                    print("no item found")
+                    pass
+            if action_request[0] == "equip":#equipping items
+                try:
+                    equipitem = items.objects.get(itemName=action_request[1])
+                    if user_purchases.filter(item = equipitem).exists():
+                        toequip = user_purchases.get(item=equipitem)
+                        current_equipState = toequip.equipState
+                        equipped = user_purchases.filter(item__itemslot = equipitem.itemslot,equipState=True)
+                        #unequipping all ites in that slot
+                        for x in equipped:
+                            x.equipState = False
+                        #flipping the equipped boolean
+                        toequip.equipState= not current_equipState
+                        toequip.save()
+                        print(toequip.equipState,equipitem.itemName)
+                except items.DoesNotExist:  # if for whatever reason there isn't a corresponding item
+                    print("no cosmetic owned")
+                    pass
+            return redirect("points")  # Reload the page to show updated points
+    return render(request, "points.html", {"user_account": user_account,"items":user_items,"purchases":user_purchases,"hat":hatslot})  # Pass the object to the template
 
 @login_required
 def leaderboard(request):
@@ -99,10 +154,8 @@ def profile_view(request, username=None):
     if username is None:
         # Redirect to the logged-in user's profile page
         return redirect('profile_with_username', username=request.user.username)
-    
     user = get_object_or_404(User, username=username)  # Fetch user by username
     user_account, created = account.objects.get_or_create(user=user)  # Ensure account exists
-
     return render(request, "accounts/profile.html", {
         "user": user,
         "user_account": user_account,
