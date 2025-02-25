@@ -67,7 +67,7 @@ If you'd like to contribute, please follow the setup guide above. For significan
 Test cases are included to ensure core functionality is working correctly.
 To run tests:
 
-python manage.py test
+python manage.py test -- verbosity=2
 
 ⚠️ Known Issues & Future Plans
 
