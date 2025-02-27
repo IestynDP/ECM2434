@@ -15,7 +15,8 @@ from .forms import UserProfileForm, AccountForm, RestaurantForm
 def is_admin(user):
     return user.is_staff  # Only allow staff/admin users
 
-
+def privacy_policy(request):
+    return render(request, "accounts/privacy_policy.html", {"user": request.user})
 
 @login_required # Only logged in users can see the home page
 def home(request):
