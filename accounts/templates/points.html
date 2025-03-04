@@ -46,7 +46,7 @@
     <form method="post">
         {% csrf_token %}
         <h3>Hats</h3>
-         <button type="submit" name="action" value ="purchase tophat">Purchase a tophat</button>
+        <button type="submit" name="action" value ="purchase tophat">Purchase a tophat</button>
     </form>
     <!--Equipping Items-->
     <h1>Equip Items</h1>
@@ -60,4 +60,5 @@
         <div class="avatarbase"><img src="{% static "AvatarBase.PNG" %}"></div>
         <div class="hat"><img src="{% static hat %}"></div>
     </div>
+    <a href="{% url 'home' %}">Home</a>
 {% endblock %}

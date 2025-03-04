@@ -3,11 +3,20 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from .models import account,items, purchases
 from .forms import UserProfileForm, AccountForm
+from django.utils.timezone import now
+from .models import account, Restaurant, CheckIn
+from .forms import UserProfileForm, AccountForm, RestaurantForm
 
+# we can use this for a wide variety of things that we only want admins to be able to do
+def is_admin(user):
+    return user.is_staff  # Only allow staff/admin users
+
+def privacy_policy(request):
+    return render(request, "accounts/privacy_policy.html", {"user": request.user})
 
 @login_required # Only logged in users can see the home page
 def home(request):
@@ -227,3 +236,50 @@ def download_data(request):
     }
 
     return JsonResponse(data, json_dumps_params={"indent": 2})
+
+
+# ALL RESTAURANT CODE GOES BETWEEN HERE
+
+@login_required
+@user_passes_test(is_admin)
+def add_restaurant(request):
+    if request.method == "POST":
+        form = RestaurantForm(request.POST)
+        if form.is_valid():
+            restaurant = form.save(commit=False)
+            restaurant.owner = request.user  # Assign the logged-in admin as the owner
+            restaurant.save()
+            return redirect("restaurant_list")
+    else:
+        form = RestaurantForm()
+
+    return render(request, "restaurants/add_restaurant.html", {"form": form})
+
+def restaurant_list(request):
+    restaurants = Restaurant.objects.all  # Only show verified restaurants
+    return render(request, "restaurants/restaurant_list.html", {"restaurants": restaurants})
+
+@login_required
+def check_in(request, restaurant_id):
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+    user = request.user
+
+    # Check if the user has already checked in today
+    today_checkin = CheckIn.objects.filter(user=user, restaurant=restaurant, timestamp__date=now().date()).exists()
+
+    if today_checkin:
+        # Prevent multiple check-ins in a single day
+        return render(request, "restaurants/check_in_failed.html", {"restaurant": restaurant})
+
+    # Record the check-in
+    CheckIn.objects.create(user=user, restaurant=restaurant)
+
+    # Award points to the user
+    user_account, created = account.objects.get_or_create(user=user)
+    user_account.points += 10  # Award 10 points per check-in (can adjust later)
+    user_account.save()
+
+    return render(request, "restaurants/check_in_success.html", {"restaurant": restaurant})
+
+
+# AND HERE (just for organisation purposes ty ty, i'll tidy the rest up at some point)
