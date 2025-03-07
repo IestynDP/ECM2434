@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <h1>Sustainability Gamification</h1>
     <h2>Welcome, {{ user.username }}!</h2>
     <p>You are logged in.</p>
     <p><strong>🌱 Sustainability Fact:</strong> {{ fact }}</p>
@@ -15,7 +16,7 @@
         });
     </script>
     <nav> 
-        <a href="{% url 'points' %}">Points</a>
+        
         <br><br>
         {% if request.user.is_staff %}
             <a href="{% url 'admin:index' %}" class="admin-button">Go to Admin Panel</a>
