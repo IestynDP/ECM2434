@@ -1,4 +1,6 @@
+{% extends "base.html" %}
 
+{% block content %}
 {% load static %}
 <style>
     .main {
@@ -27,7 +29,6 @@
 
 }
 </style>
-{% block content %}
     <h1>Your Points</h1>
     <p>Hi, {{ user.username }}!</p>
 
