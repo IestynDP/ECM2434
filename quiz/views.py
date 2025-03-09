@@ -10,7 +10,7 @@ def home(request: HttpRequest) -> HttpResponse:
     categories = Category.objects.all()
     return render(request, 'quiz_home.html', {'categories': categories})
 
-
+@login_required
 def quiz(request, category_id):
     category = Category.objects.get(id=category_id)
     questions = Question.objects.filter(category=category)
