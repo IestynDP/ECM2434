@@ -1,0 +1,122 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Comic Neue';
+        }
+        .topnav {
+                background-color: #248179;
+                overflow: hidden;
+                height: 50px;
+        }
+
+        /* sets the images margin to 5 */
+        .topnav img {
+            float: left;
+            margin: 5;
+
+        }
+
+            /* sets the text formatting within the navigation bar abd to create the boxes from the right */
+        .topnav a {
+            float: right;
+            color: #f2f2f2;
+            text-align: center;
+            padding: 14px 16px;
+            font-size: 16px;
+
+
+        }
+
+            /* sets the formating of the button of the logo in the nav bar */
+        .topnav button {
+            border: none;
+            cursor: pointer;
+            appearance: none;
+            background-color: inherit;
+            max-width: 50px;
+            padding: 5px;
+        }
+
+            /* sets the max-width of the image so it doesnt go over the button max size */
+        .topnav img{
+            max-width: 100%;
+        }
+        main{
+            min-height: calc(100vh - 150px)
+        }
+        footer {
+            text-align: center;
+        }
+    </style>
+    <title>My Sustainability App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="topnav">
+            <button onclick="location.href = '{% url 'home' %}';">
+                <img src="https://cdn-icons-png.flaticon.com/512/16/16304.png" alt="Home Icon">
+            </button>
+            <a href="{% url 'logout' %}">Logout</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile_with_username' username=user.username %}">Profile</a>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+            {% endif %}
+            <a href="{% url 'leaderboard' %}">Leaderboard</a>
+            <a href="{% url 'quiz_home' %}">Quizzes</a>
+            <a href="{% url 'qr_scan' %}">QR Scanner</a>
+            <a href="{% url 'restaurant_list' %}">Restaurants</a>
+            <a href="{% url 'points' %}">Points</a>
+        </div>
+    </header>
+
+<H1>Manage Point Rewards</H1>
+<h2>Items</h2>
+    <table border="1">
+        <tr>
+            <th>Item</th>
+            <th>Cost</th>
+            <th>Item Image</th>
+            <th>Item Slot</th>
+            <th>Delete Item</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+            <td>{{item.itemName}}</td>
+            <td>{{ item.itemCost}}</td>
+            <td>{{ item.itemimage}}</td>
+            <td>{{ item.itemslot}}</td>
+            <td><form><button type="submit" name="action" value ="delete {{item.itemid}}">Delete {{item.itemName }} {{item.itemslot }}</button></form></td>>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No items have been uploaded</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+<h2>Purchases</h2>
+    <table border="1">
+        <tr>
+            <th>User</th>
+            <th>Item</th>
+            <th>Equipped?</th>
+        </tr>
+        {% for purchase in purchases %}
+        <tr>
+            <td>{{purchase.user.user}}</td>
+            <td>{{purchase.item.itemName}}</td>
+            <td>{{purchase.equipState}}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No purchases have been uploaded</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
