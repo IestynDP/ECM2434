@@ -49,32 +49,6 @@
             font-size: 30px;
         }
 
-        .password-info {
-            font-size: 20px;
-            cursor: pointer;
-            margin-left: 10px;
-            color: #007bff;
-        }
-
-        .tooltip {
-            display: none;
-            background-color: #f9f9f9;
-            color: #333;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            position: absolute;
-            top: 25px;
-            left: 30px;
-            width: auto;
-            font-size: 16px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .tooltip.active {
-            display: block;
-        }
-
     </style>  
 </head>
 <main>
@@ -83,16 +57,10 @@
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
-            <span class="password-info" onclick="showPasswordTooltip()">?</span>
-                <div class="tooltip" id="password-tooltip">
-                    Your password can't be too similar to your other personal information.<br> Your password must contain at least 8 characters. <br> Your password can't be a commonly used password. <br> Your password can't be entirely numeric.
-                </div>
-            <br>
             <label>
                 <input type="checkbox" name="gdpr_consent" required>
                 I agree to the <a href="{% url 'privacy_policy' %}">Privacy Policy</a>.
             </label>
-            <br>
             <button type="submit" style="background-color: #4CAF50; margin-top:30px; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 5px">
                 Register
             </button>
@@ -100,10 +68,3 @@
         </form>
     </div>
 </main>
-
-<script>
-    function showPasswordTooltip() {
-        var tooltip = document.getElementById('password-tooltip');
-        tooltip.classList.toggle('active');
-    }
-</script>
