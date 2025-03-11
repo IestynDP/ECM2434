@@ -5,6 +5,9 @@ import sys
 
 def main():
     """Run administrative tasks."""
+    # Add the project directory to the sys.path
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'exeterFoodMap.settings')
     try:
         from django.core.management import execute_from_command_line
