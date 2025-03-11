@@ -145,6 +145,11 @@ def info(request):
             "title": "National Trust Tree Planting Initiatives",
             "summary": "An Initiative where nearly half a million trees are being planted across the UK, including 30,000 at Buckland Abbey in Devon.",
             "url": "https://www.theguardian.com/uk-news/2025/jan/17/national-trust-plant-almost-half-a-million-trees-winter"
+        },
+        {
+            "title": "Environmental Land Management Scheme (ELMS)",
+            "summary": "UK farmers, including those in Devon, are adopting eco-friendly farming through ELMS, boosting biodiversity.",
+            "url": "https://www.theguardian.com/environment/article/2024/aug/23/baby-owls-farming-policy-wildlife-environmental-land-management-england"
         }
     ]
 
