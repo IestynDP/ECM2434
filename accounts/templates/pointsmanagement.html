@@ -91,7 +91,10 @@
             <td>{{ item.itemCost}}</td>
             <td>{{ item.itemimage}}</td>
             <td>{{ item.itemslot}}</td>
-            <td><form><button type="submit" name="action" value ="delete {{item.itemid}}">Delete {{item.itemName }} {{item.itemslot }}</button></form></td>>
+            <td><form method = "POST">
+                {% csrf_token %}
+                <button type="submit" name="action" value ="delete {{item.itemid}}">Delete {{item.itemName }} {{item.itemslot }}</button>
+            </form></td>
         </tr>
         {% empty %}
         <tr>
