@@ -39,6 +39,7 @@ class Restaurant(models.Model):
     location = models.CharField(max_length=255)
     sustainability_features = models.TextField()
     verified = models.BooleanField(default=False)  # Will be used for verification later
+    link = models.CharField(max_length=255, unique=True, default="")  # Unique link for QR code
 
     def __str__(self):
         return self.name
