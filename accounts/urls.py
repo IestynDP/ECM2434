@@ -19,5 +19,6 @@ urlpatterns = [
     path("delete-account/", views.delete_account, name="delete_account"),
     path("privacy-policy/", views.privacy_policy, name="privacy_policy"),
     path("download-data/", views.download_data, name="download_data"),
+    path("info/", views.info, name="info"),
 ]
 
