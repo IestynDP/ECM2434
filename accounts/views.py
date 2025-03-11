@@ -128,6 +128,28 @@ def leaderboard(request):
 
     return render(request, "leaderboard.html", {"top_players": top_players})
 
+
+def info(request):
+    articles = [
+        {
+            "title": "Devon Food Partnership",
+            "summary": "Ensuring affordable, nutritious, and locally sourced food for all in Devon.",
+            "url": "https://devonclimateemergency.org.uk/taking-action-old/devon-sustainable-food-partnership/"
+        },
+        {
+            "title": "Sustainable Seafood Initiatives in Plymouth",
+            "summary": "A project to introduce fish fingers made from locally caught fish into schools, reducing food waste and supporting local fisheries.",
+            "url": "https://www.theguardian.com/environment/article/2024/aug/18/fish-finger-sandwich-plymouth-project-rebrand-rejected-catch-for-schools"
+        },
+        {
+            "title": "National Trust Tree Planting Initiatives",
+            "summary": "An Initiative where nearly half a million trees are being planted across the UK, including 30,000 at Buckland Abbey in Devon.",
+            "url": "https://www.theguardian.com/uk-news/2025/jan/17/national-trust-plant-almost-half-a-million-trees-winter"
+        }
+    ]
+
+    return render(request, "info.html", {"articles": articles})
+
 # Register View
 def register(request):
     if request.method == "POST":
