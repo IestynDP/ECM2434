@@ -9,7 +9,7 @@ ENV/
 env/
 
 # Django stuff
-db.sqlite3
+db/db.sqlite3  # Updated path
 #*.sqlite3
 
 # Logs
