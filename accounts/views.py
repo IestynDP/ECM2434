@@ -132,9 +132,11 @@ def manage_items(request):
     if request.method == "POST":
         action = request.POST.get("action")
         commands = action.split(" ")
-        print(commands)
+        #deleting the item from items and removing it from purchases
         if commands[0] == "delete":
-            print("BBBBBBB")
+            item = get_object_or_404(items, itemid = int(commands[1]))
+            purchases.objects.filter(item=item).delete()
+            item.delete()
     #getting the lists of items/purchases for display
     itemslist = items.objects.order_by('itemid')
     purchaselist = purchases.objects.order_by('id')
