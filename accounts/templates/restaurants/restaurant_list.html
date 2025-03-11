@@ -13,11 +13,14 @@
                 <p><strong>Location:</strong> {{ restaurant.location }}</p>
                 <p><strong>Eco-Friendly Features:</strong> {{ restaurant.sustainability_features }}</p>
 
-                <!-- Check-In Button -->
-                <form method="post" action="{% url 'check_in' restaurant.id %}">
+                <!-- Display the QR Code -->
+                <p><strong>QR Code:</strong></p>
+                <img src="data:image/png;base64,{{ restaurant.qr_base64 }}" alt="QR Code for {{ restaurant.name }}">
+
+                    <form method="post" action="{% url 'check_in' restaurant.id %}">
                     {% csrf_token %}
                     <button type="submit">Check In</button>
-                </form>
+                    </form>
             </li>
         {% empty %}
             <p>No restaurants added yet.</p>
