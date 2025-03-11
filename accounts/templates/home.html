@@ -1,6 +1,70 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block content %}
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        main{
+            margin:0px;
+            padding: 0px;
+        }
+
+        .background {
+            width: 100vw; 
+            height: auto;
+            z-index: -1;
+            margin:0px;
+            padding: 0px;
+        }
+
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .button-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .round-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #EEE;
+            border: 3px solid rgb(92, 64, 51,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 5px;
+            overflow: hidden;
+        }
+
+        .round-button img {
+            object-fit: contain;
+        }
+
+        .label {
+            color: black;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .points { background-color: #CBC0AC; }
+        .restaurants { background-color: #E1BF91; }
+        .qr { background-color: #AD8257; }
+        .quiz { background-color: #EEE; color: #2D524A; }
+        .leaderboard { background-color: #CBC0AC; }
+
+
+    </style>
+</head>
+<main>
+    <img class=background src="{% static 'logo.png' %}" alt="Home Page background">
+    <!--
     <h1>Sustainability Gamification</h1>
     <h2>Welcome, {{ user.username }}!</h2>
     <p>You are logged in.</p>
@@ -15,6 +79,41 @@
             path: "https://lottie.host/6c790759-9191-4e25-9d62-1d162afebf3f/Y5MNJ84DEz.json" 
         });
     </script>
+    -->
+    
+    <div class="button-container">
+        <div class="button-wrapper">
+            <a href="{% url 'points' %}" class="round-button points">
+                <img src="{% static 'homepageicons/points-icon.png' %}" style="width:60%; height:60%;"alt="Points">
+            </a>
+            <div class="label">Points</div>
+        </div>
+        <div class="button-wrapper">
+            <a href="{% url 'restaurant_list' %}" class="round-button restaurants">
+                <img src="{% static 'homepageicons/restaurants-icon.png' %}" style="width:100%; height:100%;" alt="Restaurants">
+            </a>
+            <div class="label">Restaurants</div>
+        </div>
+        <div class="button-wrapper">
+            <a href="{% url 'qr_scan' %}" class="round-button qr">
+                <img src="{% static 'homepageicons/qr-icon.png' %}" style="width:60%; height:60%;"alt="QR Scanner">
+            </a>
+            <div class="label">QR Scanner</div>
+        </div>
+        <div class="button-wrapper">
+            <a href="{% url 'quiz_home' %}" class="round-button quiz">
+                <img src="{% static 'homepageicons/quiz-icon.png' %}" style="width:80%; height:80%;" alt="Quiz">
+            </a>
+            <div class="label">Quiz</div>
+        </div>
+        <div class="button-wrapper">
+            <a href="{% url 'leaderboard' %}" class="round-button leaderboard">
+                <img src="{% static 'homepageicons/leaderboard-icon.png' %}" style="width:70%; height:70%;" alt="Leaderboard">
+            </a>
+            <div class="label">Leaderboard</div>
+        </div>
+    </div>
+
     <nav> 
         
         <br><br>
@@ -22,4 +121,6 @@
             <a href="{% url 'admin:index' %}" class="admin-button">Go to Admin Panel</a>
         {% endif %}
     </nav>
+</main>
+
 {% endblock %}
