@@ -9,7 +9,7 @@ ENV/
 env/
 
 # Django stuff
-db.sqlite3
+exeterFoodMap/db.sqlite3
 #*.sqlite3
 
 # Logs
@@ -28,8 +28,8 @@ logs/
 *.env
 
 # Static and media files
-#staticfiles/
-#media/
+exeterFoodMap/staticfiles/
+exeterFoodMap/media/
 
 # Migrations (optional, but useful to exclude generated migrations)
 **/migrations/*.pyc
