@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,8 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
     <style>
+
         * {
             font-family: 'Comic Neue';
+            margin:0px;
+            padding: 0px;
         }
         .topnav {
                 background-color: #248179;
@@ -60,7 +64,7 @@
     <header>
         <div class="topnav">
             <button onclick="location.href = '{% url 'home' %}';">
-                <img src="https://cdn-icons-png.flaticon.com/512/16/16304.png" alt="Home Icon">
+                <img src="{% static 'logo.png' %}" alt="Home Icon">
             </button>
             <a href="{% url 'logout' %}">Logout</a>
             {% if user.is_authenticated %}
@@ -68,11 +72,13 @@
             {% else %}
                 <a href="{% url 'login' %}">Login</a>
             {% endif %}
+            <!--
             <a href="{% url 'leaderboard' %}">Leaderboard</a>
             <a href="{% url 'quiz_home' %}">Quizzes</a>
             <a href="{% url 'qr_scan' %}">QR Scanner</a>
             <a href="{% url 'restaurant_list' %}">Restaurants</a>
             <a href="{% url 'points' %}">Points</a>
+            -->
         </div>
     </header>
 
