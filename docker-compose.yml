@@ -1,0 +1,12 @@
+services:
+  web:
+    build: ./webhosting/web
+    networks:
+      - webnet
+    volumes:
+      - ./
+
+
+  networks:
+    webnet:
+      driver: bridge

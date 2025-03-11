@@ -1,5 +1,5 @@
 """
-URL configuration for myproject project.
+URL configuration for exeterFoodMap project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.1/topics/http/urls/
@@ -19,8 +19,6 @@ from django.urls import path, include
 from django.shortcuts import redirect
 from django.conf import settings
 from django.conf.urls.static import static
-
-
 
 def redirect_to_login(request):
     return redirect("login")  # Redirects to the login page
