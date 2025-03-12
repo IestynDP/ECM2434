@@ -6,9 +6,10 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from apps.accounts.models import account, items, purchases  # Updated path
-from apps.accounts.forms import UserProfileForm, AccountForm, RestaurantForm  # Updated path
+from apps.accounts.forms import UserProfileForm, AccountForm, RestaurantForm, ItemForm # Updated path
 from django.utils.timezone import now
 from apps.accounts.models import Restaurant, CheckIn  # Updated path
+import os
 
 # we can use this for a wide variety of things that we only want admins to be able to do
 def is_admin(user):
@@ -136,11 +137,26 @@ def manage_items(request):
             item = get_object_or_404(items, itemid = int(commands[1]))
             purchases.objects.filter(item=item).delete()
             item.delete()
+        if action == "NewItem":
+            form = ItemForm(request.POST)
+            if form.is_valid():
+                #telling it not to commit the save
+                form.save(commit=False)
+                #making sure that the column itemimage has "itemname.PNG" in it
+                image = request.FILES["itemimage"]
+                image_extension = ".png"
+                image_filename = form.itemName+image_extension
+                items.itemimage= image_filename
+                # saving image to static (as it is going to be reused many times)
+                image_path = os.path.join("apps/accounts/static/"+image_filename,"wb")
+                with open(image_path, image) as f:
+                    for chunk in image.chunks():
+                        f.write(chunk)
     #getting the lists of items/purchases for display
     itemslist = items.objects.order_by('itemid')
     purchaselist = purchases.objects.order_by('id')
-
     return render(request, "pointsmanagement.html",{"items":itemslist,"purchases":purchaselist})
+
 
 @login_required
 def leaderboard(request):
@@ -175,7 +191,6 @@ def info(request):
 
     return render(request, "info.html", {"articles": articles})
 
-# Register View
 # Register View
 def register(request):
     if request.method == "POST":
