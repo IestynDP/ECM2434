@@ -138,8 +138,12 @@ def manage_items(request):
                 item = get_object_or_404(items, itemid = int(commands[1]))
                 purchases.objects.filter(item=item).delete()
                 item.delete()
-        form = ItemForm(request.POST)
+        form = ItemForm(request.POST,request.FILES)
+        if not form.is_valid():
+            print("bbbbb")
+            print(form.itemName)
         if form.is_valid():
+            print("aaaaa")
             #telling it not to commit the save
             form.save(commit=False)
             #making sure that the column itemimage has "itemname.PNG" in it
