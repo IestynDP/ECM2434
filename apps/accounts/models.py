@@ -52,3 +52,19 @@ class CheckIn(models.Model):
 
     def __str__(self):
         return f"{self.user.username} checked into {self.restaurant.name}"
+
+class Badge(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField()
+    icon = models.ImageField(upload_to="badges/")  # Stores badge images in media/badges/
+
+    def __str__(self):
+        return self.name
+
+class UserBadge(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
+    earned_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.badge.name}"
