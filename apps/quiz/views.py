@@ -2,7 +2,12 @@ from django.shortcuts import render, get_object_or_404
 from .models import Category, Question, Answer, UserQuizScore
 from django.http import HttpRequest, HttpResponse
 from django.contrib.auth.decorators import login_required
-from apps.accounts.models import account  # Updated path
+from apps.accounts.models import account, UserBadge, Badge  # Updated path
+from django.contrib import messages
+from django.contrib.messages import get_messages
+
+
+
 
 
 def home(request: HttpRequest) -> HttpResponse:
@@ -63,6 +68,21 @@ def submit_quiz(request, category_id):
             user_account.save()
             user_quiz_score.highest_score = score
             user_quiz_score.save()
+
+        # Award "Quiz Master" Badge if score is 100%
+        if score == 100:
+            quiz_badge, created = Badge.objects.get_or_create(name="Quiz Master", defaults={
+                "description": "Awarded for scoring 100% on a quiz.",
+                "icon": "badges/quiz_master.png"
+            })
+
+            if not UserBadge.objects.filter(user=request.user, badge=quiz_badge).exists():
+                UserBadge.objects.create(user=request.user, badge=quiz_badge)
+                messages.success(request, "Congratulations! You've earned the 'Quiz Master' badge!")
+
+        storage = get_messages(request)
+        for _ in storage:
+            pass  # consumes messages, preventing duplication
 
     context = {
         'score': score,
