@@ -103,7 +103,7 @@
         {% endfor %}
     </table>
 
-    <form method="POST" action="NewItem" enctype="multipart/form-data">
+    <form method="POST" action="{% url 'manage_items' %}" name="action" value="NewItem" enctype="multipart/form-data">
     {% csrf_token %}
     <h2>Add a new item</h2>
     <label for="text">Item name:</label>
@@ -114,6 +114,13 @@
 
     <label for="file">Image File (.PNG):</label>
     <input type="file" id="file" name="file" accept="image/png" required>
+
+        <label for="slot">Item slot:</label>
+            <select id="slot" name="slot">
+            <option value="hat">Hat</option>
+              <option value="shirt">Shirt</option>
+              <option value="glasses">Glasses</option>
+            </select>
 
     <button type="submit">Submit</button>
 </form>
