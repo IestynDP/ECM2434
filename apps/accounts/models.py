@@ -2,26 +2,17 @@ import random, string
 from django.db import models, connection
 from django.contrib.auth.models import User
 from encrypted_model_fields.fields import EncryptedCharField
-<<<<<<< HEAD:accounts/models.py
 from .utils import generate_unique_qr_code
-
-=======
->>>>>>> 1505391f9afbe37ab43d6719c9308aeab2dfdce5:apps/accounts/models.py
 
 # Create your models here.
 class account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     points = models.IntegerField(default=0)
-<<<<<<< HEAD:accounts/models.py
-    avatar = models.ImageField(default='default.jpg', upload_to='profile_images')
-    bio = EncryptedCharField(max_length=500, default="")
-=======
     bio = models.TextField(blank=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
 
     def __str__(self):
         return self.user.username
->>>>>>> 1505391f9afbe37ab43d6719c9308aeab2dfdce5:apps/accounts/models.py
 
 class tasks(models.Model):
     taskID = models.IntegerField(primary_key=True)

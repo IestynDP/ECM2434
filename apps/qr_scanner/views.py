@@ -2,10 +2,9 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import JsonResponse
-from accounts.models import Restaurant
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
-from accounts.models import CheckIn,account
+from apps.accounts.models import CheckIn,account,Restaurant
 
 @login_required  
 def qr_scan(request):
@@ -17,7 +16,7 @@ def check_restaurant_link(request):
         link = request.POST.get('link')
         try:
             restaurant = Restaurant.objects.get(link=link)
-            return JsonResponse({'exists': True, 'restaurant_id': restaurant_id})
+            return JsonResponse({'exists': True, 'restaurant_id': restaurant.id})
         except Restaurant.DoesNotExist:
             return JsonResponse({'exists': False})
     return JsonResponse({'error': 'Invalid request method'}, status=400)

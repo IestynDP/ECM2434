@@ -2,19 +2,18 @@ import base64
 import random
 import string
 from django.db import connection
-import qrcode
 from io import BytesIO
+import qrcode
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http import JsonResponse
-from apps.accounts.models import account, items, purchases  # Updated path
+from django.http import JsonResponse # Updated path
 from apps.accounts.forms import UserProfileForm, AccountForm, RestaurantForm  # Updated path
 from django.utils.timezone import now
-from apps.accounts.models import Restaurant, CheckIn  # Updated path
+from apps.accounts.models import Restaurant, CheckIn, items, purchases, account # Updated path
 
 # we can use this for a wide variety of things that we only want admins to be able to do
 def is_admin(user):
