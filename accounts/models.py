@@ -32,6 +32,8 @@ class purchases(models.Model):
 
 
     #tasks
+    
+
 class Restaurant(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)  # Business owner
     name = models.CharField(max_length=255, unique=True)
@@ -39,10 +41,26 @@ class Restaurant(models.Model):
     location = models.CharField(max_length=255)
     sustainability_features = models.TextField()
     verified = models.BooleanField(default=False)  # Will be used for verification later
-    qrCodeID = models.CharField(max_length=16, unique=True, default=generate_unique_qr_code())
+    qrCodeID = models.CharField(max_length=16, unique=True, default=generate_unique_qr_code)
 
     def __str__(self):
         return self.name
+
+def generate_unique_qr_code():
+# Generate a unique 16-character alphanumeric QR Code, only querying the DB after migration
+    qr_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
+
+    # Check if the table exists before querying the database
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='accounts_restaurant';")
+        table_exists = cursor.fetchone() is not None  # True if the table exists
+
+    if table_exists:
+        while Restaurant.objects.filter(qrCodeID=qr_code).exists():
+            qr_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))  # Generate a new one if duplicate
+
+    return qr_code
+
 
 class CheckIn(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # User who checked in

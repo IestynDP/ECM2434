@@ -26,4 +26,4 @@ class AccountForm(forms.ModelForm):
 class RestaurantForm(forms.ModelForm):
     class Meta:
         model = Restaurant
-        fields = ["name", "description", "location", "sustainability_features","link"]
+        fields = ["name", "description", "location", "sustainability_features", "link"]

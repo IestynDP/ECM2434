@@ -271,10 +271,10 @@ def add_restaurant(request):
         if form.is_valid():
             restaurant = form.save(commit=False)
             restaurant.owner = request.user  # Assign the logged-in admin as the owner
-            restaurant.save()  # ✅ Ensure the restaurant is saved
+            restaurant.save()  # Ensure the restaurant is saved
 
             # Refresh the object to ensure it has an ID
-            restaurant.refresh_from_db()  # ✅ This ensures restaurant.id is available
+            restaurant.refresh_from_db()  # This ensures restaurant.id is available
 
             return redirect("restaurant_list")
     else:
