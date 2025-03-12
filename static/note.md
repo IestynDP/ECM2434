@@ -1,0 +1,1 @@
+this is dir is for static files like css, js or images for the website
