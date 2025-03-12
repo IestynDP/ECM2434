@@ -283,29 +283,17 @@ def add_restaurant(request):
     return render(request, "restaurants/add_restaurant.html", {"form": form})
 
 def restaurant_list(request):
-    # Retrieve all restaurants and generate QR codes for them.
-    restaurants = Restaurant.objects.all() 
+    restaurants = Restaurant.objects.all()  # Fetch all restaurants
 
-    restaurant_data = []
     for restaurant in restaurants:
-        # Generate QR code from qrCodeID
+        # Generate QR code if it doesn't already exist
         qr = qrcode.make(restaurant.qrCodeID)
         buffer = BytesIO()
         qr.save(buffer, format="PNG")
-        buffer.seek(0)
-        qr_base64 = base64.b64encode(buffer.getvalue()).decode()  # Convert QR code to base64
+        qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+        restaurant.qr_base64 = qr_base64  # Attach QR code to restaurant object
 
-        restaurant_data.append
-        {
-            "id": restaurant.id,
-            "name": restaurant.name,
-            "description": restaurant.description,
-            "location": restaurant.location,
-            "sustainability_features": restaurant.sustainability_features,
-            "qr_base64": qr_base64,  # Store base64-encoded QR code
-        }
-
-    return render(request, "restaurants/restaurant_list.html", {"restaurants": restaurant_data})
+    return render(request, "restaurants/restaurant_list.html", {"restaurants": restaurants})
 
 @login_required
 def check_in(request, restaurant_id):
