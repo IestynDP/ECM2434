@@ -103,7 +103,7 @@
         {% endfor %}
     </table>
 
-    <form method="POST" action="{% url 'manage_items' %}" name="action" value="NewItem" enctype="multipart/form-data">
+    <form method="POST" name="action" value="NewItem" enctype="multipart/form-data">
     {% csrf_token %}
     <h2>Add a new item</h2>
     <label for="text">Item name:</label>

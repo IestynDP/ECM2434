@@ -131,25 +131,25 @@ def manage_items(request):
     #handling requests
     if request.method == "POST":
         action = request.POST.get("action")
-        commands = action.split(" ")
-        #deleting the item from items and removing it from purchases
-        if commands[0] == "delete":
-            item = get_object_or_404(items, itemid = int(commands[1]))
-            purchases.objects.filter(item=item).delete()
-            item.delete()
-        if action == "NewItem":
-            form = ItemForm(request.POST)
-            if form.is_valid():
-                #telling it not to commit the save
-                form.save(commit=False)
-                #making sure that the column itemimage has "itemname.PNG" in it
-                image = request.FILES["itemimage"]
-                image_extension = ".png"
-                image_filename = form.itemName+image_extension
-                items.itemimage= image_filename
-                # saving image to static (as it is going to be reused many times)
-                image_path = os.path.join("apps/accounts/static/"+image_filename,"wb")
-                with open(image_path, image) as f:
+        if isinstance(action,str):
+            commands = action.split(" ")
+            #deleting the item from items and removing it from purchases
+            if commands[0] == "delete":
+                item = get_object_or_404(items, itemid = int(commands[1]))
+                purchases.objects.filter(item=item).delete()
+                item.delete()
+        form = ItemForm(request.POST)
+        if form.is_valid():
+            #telling it not to commit the save
+            form.save(commit=False)
+            #making sure that the column itemimage has "itemname.PNG" in it
+            image = request.FILES["itemimage"]
+            image_extension = ".png"
+            image_filename = form.itemName+image_extension
+            items.itemimage= image_filename
+            # saving image to static (as it is going to be reused many times)
+            image_path = os.path.join("apps/accounts/static/"+image_filename,"wb")
+            with open(image_path, image) as f:
                     for chunk in image.chunks():
                         f.write(chunk)
     #getting the lists of items/purchases for display
