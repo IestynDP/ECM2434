@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h3>{{ user.username }}'s Profile</h3>
+    {% if user_account %}
+        {% if user_account.avatar %}
+        <img src="{{ user_account.avatar.url }}" alt="Profile Picture" width="150">
+        {% else %}
+            <p>No profile picture uploaded.</p>
+        {% endif %}
+    {% endif %}
+
+    <p><strong>First Name:</strong> {{ user.first_name }}</p>
+    <p><strong>Last Name:</strong> {{ user.last_name }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+
+    {% if user_account %}
+        <p><strong>Points:</strong> {{ user_account.points }}</p>
+        <p><strong>Bio:</strong> {{ user_account.bio }}</p>
+
+    {% else %}
+        <p><strong>Points:</strong> 0</p>
+        <p><strong>Bio:</strong> No bio set.</p>
+    {% endif %}
+
+    <h2>🏆 Achievements</h2>
+    <div class="badges-container">
+        {% for user_badge in user.userbadge_set.all %}
+            <div class="badge">
+                <img src="{{ user_badge.badge.icon.url }}" alt="{{ user_badge.badge.name }}" width="80">
+                <p>{{ user_badge.badge.name }}</p>
+            </div>
+        {% empty %}
+            <p>No badges earned yet.</p>
+        {% endfor %}
+    </div>
+
+
+    <!-- Show Edit Profile button ONLY if the logged-in user is viewing their own profile -->
+    {% if user == request.user %}
+        <a href="{% url 'edit_profile_with_username' username=user.username %}"
+            style="display: inline-block; padding: 8px 12px; background: #008CBA; color: white; text-decoration: none; border-radius: 5px;">
+            Edit Profile
+        </a>
+    {% endif %}
+
+    <br> <br>
+    <form method="GET" action="{% url 'search_users' %}">
+        <input type="text" name="q" placeholder="Search for a user..." required>
+        <button type="submit">Search</button>
+    </form>
+
+    <br> <br>
+
+    <form method="POST" action="{% url 'download_data' %}">
+        {% csrf_token %}
+        <button type="submit" style="background-color: blue; color: white;">Download Data</button>
+    </form>
+    <form method="POST" action="{% url 'delete_account' %}">
+        {% csrf_token %}
+        <button type="submit" style="background-color: red; color: white;">Delete Account</button>
+    </form>
+{% endblock %}

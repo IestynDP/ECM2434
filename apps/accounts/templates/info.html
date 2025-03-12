@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>🌍 Sustainability Initiatives in Devon</h1>
+<p>Explore local sustainability projects and how they contribute to a greener future.</p>
+
+<ul>
+    {% for article in articles %}
+        <li>
+            <strong><a href="{{ article.url }}" target="_blank">{{ article.title }}</a></strong>
+            <p>{{ article.summary }}</p>
+        </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
