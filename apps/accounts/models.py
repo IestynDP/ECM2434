@@ -21,7 +21,7 @@ class items(models.Model):
     itemName = models.CharField(max_length=100,default="")
     itemCost = models.IntegerField(default = 20)
     itemimage = models.CharField(max_length=500,default="ItemImage")
-    itemslot = models.CharField(max_length=50, default="")
+    itemslot = ["hat","shirt","glasses"]
 
 #holds which items a user has purchased
 class purchases(models.Model):
