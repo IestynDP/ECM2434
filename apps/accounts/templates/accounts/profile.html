@@ -23,7 +23,18 @@
         <p><strong>Bio:</strong> No bio set.</p>
     {% endif %}
 
-    <p><strong>Badges:</strong> (There are no badges yet)</p>
+    <h2>🏆 Achievements</h2>
+    <div class="badges-container">
+        {% for user_badge in user.userbadge_set.all %}
+            <div class="badge">
+                <img src="{{ user_badge.badge.icon.url }}" alt="{{ user_badge.badge.name }}" width="80">
+                <p>{{ user_badge.badge.name }}</p>
+            </div>
+        {% empty %}
+            <p>No badges earned yet.</p>
+        {% endfor %}
+    </div>
+
 
     <!-- Show Edit Profile button ONLY if the logged-in user is viewing their own profile -->
     {% if user == request.user %}
