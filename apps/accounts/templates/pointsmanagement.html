@@ -107,16 +107,16 @@
     {% csrf_token %}
     <h2>Add a new item</h2>
     <label for="text">Item name:</label>
-    <input type="text" id="text" name="text" required>
+    <input type="text" id="itemName" name="itemName" required>
 
     <label for="number">Item Cost:</label>
-    <input type="number" id="number" name="number" required>
+    <input type="number" id="itemCost" name="itemCost" required>
 
     <label for="file">Image File (.PNG):</label>
     <input type="file" id="file" name="file" accept="image/png" required>
 
-        <label for="slot">Item slot:</label>
-            <select id="slot" name="slot">
+        <label for="itemslot">Item slot:</label>
+            <select id="itemslot" name="itemslot">
             <option value="hat">Hat</option>
               <option value="shirt">Shirt</option>
               <option value="glasses">Glasses</option>
