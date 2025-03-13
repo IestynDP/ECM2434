@@ -6,9 +6,10 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from apps.accounts.models import account, items, purchases  # Updated path
-from apps.accounts.forms import UserProfileForm, AccountForm, RestaurantForm  # Updated path
+from apps.accounts.forms import UserProfileForm, AccountForm, RestaurantForm, ItemForm # Updated path
 from django.utils.timezone import now
 from apps.accounts.models import Restaurant, CheckIn  # Updated path
+import os
 
 # we can use this for a wide variety of things that we only want admins to be able to do
 def is_admin(user):
@@ -90,11 +91,15 @@ def points_view(request):
                     if purchaseitem.itemCost <= user_account.points:
                         if not user_purchases.filter(item=purchaseitem).exists(): #checking they have not already bought the item
                             try:
-                                purchases.objects.create(user=user_account,item=purchaseitem)
+                                user = user_account
+                                item = purchaseitem
+                                print(user, item)
+                                purchases.objects.create(user=user, item=item,equipState=0)
                                 user_account.points -= purchaseitem.itemCost
-                                purchases.save()
                                 user_account.save()
                             except: #handles unexpected failures
+                                print("All items in DB:", items.objects.values_list("itemName", flat=True))
+                                print("could not create purchase value")
                                 pass
                     else:
                         print("item already owned")
@@ -122,10 +127,46 @@ def points_view(request):
     return render(request, "points.html", {"user_account": user_account,"items":user_items,"purchases":user_purchases,"hat":hatslot})  # Pass the object to the template
 
 @login_required
+#@user_passes_test(is_admin)
+def manage_items(request):
+    #handling requests
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if isinstance(action,str):
+            commands = action.split(" ")
+            #deleting the item from items and removing it from purchases
+            if commands[0] == "delete":
+                item = get_object_or_404(items, itemid = int(commands[1]))
+                purchases.objects.filter(item=item).delete()
+                item.delete()
+        form = ItemForm(request.POST,request.FILES)
+        if not form.is_valid():
+            print("bbbbb")
+            print(form.itemName)
+        if form.is_valid():
+            print("aaaaa")
+            #telling it not to commit the save
+            form.save(commit=False)
+            #making sure that the column itemimage has "itemname.PNG" in it
+            image = request.FILES["itemimage"]
+            image_extension = ".png"
+            image_filename = form.itemName+image_extension
+            items.itemimage= image_filename
+            # saving image to static (as it is going to be reused many times)
+            image_path = os.path.join("apps/accounts/static/"+image_filename,"wb")
+            with open(image_path, image) as f:
+                    for chunk in image.chunks():
+                        f.write(chunk)
+    #getting the lists of items/purchases for display
+    itemslist = items.objects.order_by('itemid')
+    purchaselist = purchases.objects.order_by('id')
+    return render(request, "pointsmanagement.html",{"items":itemslist,"purchases":purchaselist})
+
+
+@login_required
 def leaderboard(request):
     # top 10 users sorted by points in descending order
     top_players = account.objects.order_by('-points')[:10]
-
     return render(request, "leaderboard.html", {"top_players": top_players})
 
 
@@ -169,7 +210,7 @@ def register(request):
         form = UserCreationForm()
     return render(request, "accounts/register.html", {"form": form})
 
-# Login View
+# Login Vie
 def login_view(request):
     if request.method == "POST":
         form = AuthenticationForm(data=request.POST)
