@@ -13,9 +13,9 @@ def qr_scan(request):
 @csrf_exempt
 def check_restaurant_link(request):
     if request.method == 'POST':
-        link = request.POST.get('link')
+        qr_code = request.POST.get('qr_code')
         try:
-            restaurant = Restaurant.objects.get(link=link)
+            restaurant = Restaurant.objects.get(qrCodeID=qr_code)
             return JsonResponse({'exists': True, 'restaurant_id': restaurant.id})
         except Restaurant.DoesNotExist:
             return JsonResponse({'exists': False})

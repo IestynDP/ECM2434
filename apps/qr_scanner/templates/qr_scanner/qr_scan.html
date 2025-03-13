@@ -22,15 +22,13 @@
         let restaurantId = null;  // Variable to store the restaurant ID
 
         function onScanSuccess(decodedText, decodedResult) {
-            // Display the scanned result
-            document.getElementById('result').innerText = "";
 
             // Send the scanned link to the backend to check if it's valid
             $.ajax({
                 url: "{% url 'check_restaurant_link' %}",
                 method: "POST",
                 data: {
-                    'link': decodedText,
+                    'qr_code': decodedText,
                     'csrfmiddlewaretoken': '{{ csrf_token }}'
                 },
                 success: function(response) {
@@ -64,7 +62,7 @@
                     success: function(response) {
                         if (response.status === 'success') {
                             document.getElementById('result').innerText = "Congratulations! You just won 5 points!";
-                        } else if (response.status === 'failed') {
+                        } else if(response.status === 'failed') {
                             document.getElementById('result').innerText = "You already checked in today!";
                         }
                     },
