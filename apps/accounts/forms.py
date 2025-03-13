@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm  # Ensure this is imported
-from apps.accounts.models import account, Restaurant  # Updated path
+from .models import account, Restaurant, items
 
 class UserProfileForm(forms.ModelForm):
     first_name = forms.CharField(required=False, widget=forms.TextInput(attrs={"class": "form-control"}))
@@ -28,3 +27,8 @@ class RestaurantForm(forms.ModelForm):
     class Meta:
         model = Restaurant
         fields = ["name", "description", "location", "sustainability_features"]
+
+class ItemForm(forms.ModelForm):
+    class Meta:
+        model = items
+        fields = ["itemName","itemCost","itemimage","itemslot"]
