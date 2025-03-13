@@ -85,11 +85,11 @@
             <th>Item Slot</th>
             <th>Delete Item</th>
         </tr>
-        {% for item in items %}
+        {% for item in itemlist %}
         <tr>
             <td>{{item.itemName}}</td>
             <td>{{ item.itemCost}}</td>
-            <td>{{ item.itemimage}}</td>
+            <td>{{ items.itemimage}}</td>
             <td>{{ item.itemslot}}</td>
             <td><form method = "POST">
                 {% csrf_token %}
@@ -103,7 +103,7 @@
         {% endfor %}
     </table>
 
-    <form method="POST" name="action" value="NewItem" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <h2>Add a new item</h2>
     <label for="text">Item name:</label>
@@ -113,7 +113,7 @@
     <input type="number" id="itemCost" name="itemCost" required>
 
     <label for="file">Image File (.PNG):</label>
-    <input type="file" id="file" name="file" accept="image/png" required>
+    <input type="file" id="itemimage" name="itemimage" accept="image/png" required>
 
         <label for="itemslot">Item slot:</label>
             <select id="itemslot" name="itemslot">
@@ -132,7 +132,7 @@
             <th>Item</th>
             <th>Equipped?</th>
         </tr>
-        {% for purchase in purchases %}
+        {% for purchase in purchaselist %}
         <tr>
             <td>{{purchase.user.user}}</td>
             <td>{{purchase.item.itemName}}</td>

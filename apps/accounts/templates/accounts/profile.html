@@ -42,6 +42,34 @@
             style="display: inline-block; padding: 8px 12px; background: #008CBA; color: white; text-decoration: none; border-radius: 5px;">
             Edit Profile
         </a>
+    {% if user_account %}
+        <p>You have {{ user_account.points }} points.</p>
+    {% else %}
+        <p>You have 0 points.</p>
+    {% endif %}
+    <form method="post">
+        {% csrf_token %} <!-- Protects against CSRF attacks -->
+        <button type="submit" name="action" value="addpoints">I turned off a light</button>
+    </form>
+    <h1>Purchase Items</h1>
+    <form method="post">
+        {% csrf_token %}
+        <h3>Hats</h3>
+        <button type="submit" name="action" value ="purchase tophat">Purchase a tophat</button>
+        <button type="submit" name="action" value ="purchase plant">Purchase a plant hat</button>
+
+    </form>
+    <!--Equipping Items-->
+    <h1>Equip Items</h1>
+    <form method="post">
+        <h3>Hats</h3>
+        {% csrf_token %}
+        <button type="submit" name="action" value ="equip tophat">Equip a tophat</button>
+        <button type="submit" name="action" value ="equip plant">Equip a plant hat</button>
+    </form>
+    <a href="{% url 'home' %}">Home</a>
+
+
     {% endif %}
 
     <br> <br>
@@ -60,4 +88,5 @@
         {% csrf_token %}
         <button type="submit" style="background-color: red; color: white;">Delete Account</button>
     </form>
+
 {% endblock %}
