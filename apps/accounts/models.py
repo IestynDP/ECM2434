@@ -6,6 +6,7 @@ from encrypted_model_fields.fields import EncryptedCharField
 class account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     points = models.IntegerField(default=0)
+    total_points = models.IntegerField(default=0)  # Total lifetime points
     bio = models.TextField(blank=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
 
@@ -68,3 +69,4 @@ class UserBadge(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.badge.name}"
+
