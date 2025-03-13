@@ -206,7 +206,7 @@ def profile_view(request, username=None):
                 try:
                     equipitem = items.objects.get(itemName=action_request[1])
                     if purchases.objects.filter(item=equipitem).exists():
-                        toequip = purchases.objects.get(item=equipitem)
+                        toequip = purchases.objects.filter(item=equipitem).first()#if, for some reason there is duplicaton, this won't break
                         current_equipState = toequip.equipState
                         equipped = purchases.objects.filter(item__itemslot=equipitem.itemslot, equipState=True)
                         # unequipping all ites in that slot

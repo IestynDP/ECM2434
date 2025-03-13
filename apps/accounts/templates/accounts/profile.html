@@ -42,9 +42,6 @@
             Edit Profile
         </a>
         <p>You have {{ user_account.points }} points.</p>
-    {% else %}
-        <p>You have 0 points.</p>
-    {% endif %}
     <form method="post">
         {% csrf_token %} <!-- Protects against CSRF attacks -->
         <button type="submit" name="action" value="addpoints">I turned off a light</button>
@@ -65,10 +62,6 @@
             {% endfor %}
         </tr>
 
-        <tr>
-            <td colspan="3">No items have been uploaded</td>
-        </tr>
-
     </form>
     <!--Equipping Items-->
     <h1>Equip Cosmetics</h1>
@@ -87,9 +80,6 @@
             {% endfor %}
         </tr>
 
-        <tr>
-            <td colspan="3">No items have been uploaded</td>
-        </tr>
     <a href="{% url 'home' %}">Home</a>
 
     <br> <br>
@@ -108,5 +98,6 @@
         {% csrf_token %}
         <button type="submit" style="background-color: red; color: white;">Delete Account</button>
     </form>
+     {% endif %}
 
 {% endblock %}
