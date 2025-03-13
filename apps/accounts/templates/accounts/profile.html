@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block content %}
     <h3>{{ user.username }}'s Profile</h3>
     {% if user_account %}
@@ -42,7 +41,6 @@
             style="display: inline-block; padding: 8px 12px; background: #008CBA; color: white; text-decoration: none; border-radius: 5px;">
             Edit Profile
         </a>
-    {% if user_account %}
         <p>You have {{ user_account.points }} points.</p>
     {% else %}
         <p>You have 0 points.</p>
@@ -54,23 +52,45 @@
     <h1>Purchase Items</h1>
     <form method="post">
         {% csrf_token %}
-        <h3>Hats</h3>
-        <button type="submit" name="action" value ="purchase tophat">Purchase a tophat</button>
-        <button type="submit" name="action" value ="purchase plant">Purchase a plant hat</button>
+        {% for item in purchaseable %}
+        <tr>
+            <td>{{item.itemName}}</td>
+            <td>{{ item.itemCost}}</td>
+            <td>{{ items.itemimage.url}}</td>
+            <td>{{ item.itemslot}}</td>
+            <td><form method = "POST">
+                {% csrf_token %}
+                <button type="submit" name="action" value ="purchase {{item.itemid}}">Buy {{item.itemName }} {{item.itemslot }}</button>
+            </form></td>
+            {% endfor %}
+        </tr>
+
+        <tr>
+            <td colspan="3">No items have been uploaded</td>
+        </tr>
 
     </form>
     <!--Equipping Items-->
-    <h1>Equip Items</h1>
+    <h1>Equip Cosmetics</h1>
     <form method="post">
-        <h3>Hats</h3>
         {% csrf_token %}
-        <button type="submit" name="action" value ="equip tophat">Equip a tophat</button>
-        <button type="submit" name="action" value ="equip plant">Equip a plant hat</button>
-    </form>
+        {% for item in owned %}
+        <tr>
+            <td>{{item.itemName}}</td>
+            <td>{{ item.itemCost}}</td>
+            <td>{{ items.itemimage}}</td>
+            <td>{{ item.itemslot}}</td>
+            <td><form method = "POST">
+                {% csrf_token %}
+                <button type="submit" name="action" value ="equip {{item.itemid}}">Use {{item.itemName }} {{item.itemslot }}</button>
+            </form></td>
+            {% endfor %}
+        </tr>
+
+        <tr>
+            <td colspan="3">No items have been uploaded</td>
+        </tr>
     <a href="{% url 'home' %}">Home</a>
-
-
-    {% endif %}
 
     <br> <br>
     <form method="GET" action="{% url 'search_users' %}">

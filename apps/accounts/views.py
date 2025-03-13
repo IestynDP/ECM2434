@@ -51,79 +51,6 @@ def home(request):
     fact = random.choice(fun_facts)
     return render(request, "home.html", {"fact": fact})
 
-# Points View
-@login_required
-def points_view(request):
-    #setting up the querysets of dbs relating to the user
-    try:
-        user_account = account.objects.get(user=request.user)  # Get the logged-in user's account
-        user_items = items.objects.all() #get item list
-        user_purchases = purchases.objects.filter(user=user_account)
-        hatslot = "nohat.PNG"
-    except account.DoesNotExist:
-        user_account = None  # If no account exists, handle gracefully
-    # Updating the avatar to reflect equipped cosmetics
-    try:
-        equipped = user_purchases.filter(equipState=True)
-        for x in equipped:
-            if x.item.itemslot == "hat": #currently only one hat exists. more hats and other types will be implemented later
-                hatslot = x.item.itemimage
-    except items.DoesNotExist: #handles unexpected errors such as and item not existing
-        pass
-# Check if the button was clicked
-    if request.method == "POST":
-        action = request.POST.get("action")
-        #for handling points for demonstrative purposes - will be removed once actual point gains are added
-        if action == "addpoints":
-            user_account.points += 5  # Increase points by 5
-            user_account.save()
-        else:
-            action_request = action.split(" ")
-            if action_request[0] == "purchase": #purchasing an item
-                try:
-                    purchaseitem = items.objects.get(itemName=action_request[1]) #item reference
-                    #checking if the user has enough points to buy the item
-                    if purchaseitem.itemCost > user_account.points:
-                        print("not enough points")
-                        pass
-                    #if they do, proceed
-                    if purchaseitem.itemCost <= user_account.points:
-                        if not user_purchases.filter(item=purchaseitem).exists(): #checking they have not already bought the item
-                            try:
-                                user = user_account
-                                item = purchaseitem
-                                print(user, item)
-                                purchases.objects.create(user=user, item=item,equipState=0)
-                                user_account.points -= purchaseitem.itemCost
-                                user_account.save()
-                            except: #handles unexpected failures
-                                print("All items in DB:", items.objects.values_list("itemName", flat=True))
-                                print("could not create purchase value")
-                                pass
-                    else:
-                        print("item already owned")
-                except items.DoesNotExist: #if for whatever reason there isn't a corresponding item
-                    print("no item found")
-                    pass
-            if action_request[0] == "equip":#equipping items
-                try:
-                    equipitem = items.objects.get(itemName=action_request[1])
-                    if user_purchases.filter(item = equipitem).exists():
-                        toequip = user_purchases.get(item=equipitem)
-                        current_equipState = toequip.equipState
-                        equipped = user_purchases.filter(item__itemslot = equipitem.itemslot,equipState=True)
-                        #unequipping all ites in that slot
-                        for x in equipped:
-                            x.equipState = False
-                        #flipping the equipped boolean
-                        toequip.equipState= not current_equipState
-                        toequip.save()
-                        print(toequip.equipState,equipitem.itemName)
-                except items.DoesNotExist:  # if for whatever reason there isn't a corresponding item
-                    print("no cosmetic owned")
-                    pass
-            return redirect("points")  # Reload the page to show updated points
-    return render(request, "points.html", {"user_account": user_account,"items":user_items,"purchases":user_purchases,"hat":hatslot})  # Pass the object to the template
 
 @login_required
 @user_passes_test(is_admin)
@@ -223,9 +150,9 @@ def profile_view(request, username=None):
     user_account, created = account.objects.get_or_create(user=user)  # Ensure account exists
     # setting up the querysets of dbs relating to the user
     try:
-        user_account = account.objects.get(user=request.user)  # Get the logged-in user's account
-        user_items = items.objects.all()  # get item list
-        user_purchases = purchases.objects.filter(user=user_account)
+        print(user_account)
+        purchased_items = items.objects.filter(purchases__user__user=user).distinct()#getting the purchased items as a list
+        not_purchased_items = items.objects.exclude(purchases__user__user=user)#getting not purchased items
         hatslot = "nohat.PNG"
         borderslot = "noborder.PNG"
         namecardslot = "nonamecard.PNG"
@@ -233,10 +160,14 @@ def profile_view(request, username=None):
         user_account = None  # If no account exists, handle gracefully
     # Updating the avatar to reflect equipped cosmetics
     try:
-        equipped = user_purchases.filter(equipState=True)
+        equipped = purchases.objects.filter(equipState=True, user__user=user)
         for x in equipped:
-            if x.item.itemslot == "hat":  # currently only one hat exists. more hats and other types will be implemented later
+            if x.item.itemslot == "hat":
                 hatslot = x.item.itemimage
+            if x.item.itemslot == "namecard":
+                namecardslot = x.item.itemimage
+            if x.item.itemslot == "border":
+                borderslot = x.item.itemimage
     except items.DoesNotExist:  # handles unexpected errors such as and item not existing
         pass
     # Check if the button was clicked
@@ -257,8 +188,7 @@ def profile_view(request, username=None):
                         pass
                     # if they do, proceed
                     if purchaseitem.itemCost <= user_account.points:
-                        if not user_purchases.filter(
-                                item=purchaseitem).exists():  # checking they have not already bought the item
+                        if not purchased_items.filter(item=purchaseitem).exists():  # checking they have not already bought the item
                             try:
                                 user = user_account
                                 item = purchaseitem
@@ -278,10 +208,10 @@ def profile_view(request, username=None):
             if action_request[0] == "equip":  # equipping items
                 try:
                     equipitem = items.objects.get(itemName=action_request[1])
-                    if user_purchases.filter(item=equipitem).exists():
-                        toequip = user_purchases.get(item=equipitem)
+                    if purchased_items.filter(item=equipitem).exists():
+                        toequip = purchased_items.get(item=equipitem)
                         current_equipState = toequip.equipState
-                        equipped = user_purchases.filter(item__itemslot=equipitem.itemslot, equipState=True)
+                        equipped = purchased_items.filter(item__itemslot=equipitem.itemslot, equipState=True)
                         # unequipping all ites in that slot
                         for x in equipped:
                             x.equipState = False
@@ -296,11 +226,11 @@ def profile_view(request, username=None):
     return render(request, "accounts/profile.html", {
         "user": user,
         "user_account": user_account,
-        "items": user_items,
-        "purchases": user_purchases,
         "hat": hatslot,
         "border":borderslot,
-        "namecard":namecardslot
+        "namecard":namecardslot,
+        "owned":purchased_items,
+        "purchaseable":not_purchased_items
     })
     
 # Profile Searching
