@@ -60,7 +60,7 @@
             <td>{{ item.itemslot}}</td>
             <td><form method = "POST">
                 {% csrf_token %}
-                <button type="submit" name="action" value ="purchase {{item.itemid}}">Buy {{item.itemName }} {{item.itemslot }}</button>
+                <button type="submit" name="action" value ="purchase {{item.itemName}}">Buy {{item.itemName }} {{item.itemslot }}</button>
             </form></td>
             {% endfor %}
         </tr>
@@ -82,7 +82,7 @@
             <td>{{ item.itemslot}}</td>
             <td><form method = "POST">
                 {% csrf_token %}
-                <button type="submit" name="action" value ="equip {{item.itemid}}">Use {{item.itemName }} {{item.itemslot }}</button>
+                <button type="submit" name="action" value ="equip {{item.itemName}}">Use {{item.itemName }} {{item.itemslot }}</button>
             </form></td>
             {% endfor %}
         </tr>

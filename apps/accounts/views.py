@@ -53,7 +53,7 @@ def home(request):
 
 
 @login_required
-@user_passes_test(is_admin)
+#@user_passes_test(is_admin)
 def manage_items(request):
     #handling requests
     if request.method == "POST":
@@ -173,6 +173,7 @@ def profile_view(request, username=None):
     # Check if the button was clicked
     if request.method == "POST":
         action = request.POST.get("action")
+        print(action)
         # for handling points for demonstrative purposes - will be removed once actual point gains are added
         if action == "addpoints":
             user_account.points += 5  # Increase points by 5
@@ -188,7 +189,7 @@ def profile_view(request, username=None):
                         pass
                     # if they do, proceed
                     if purchaseitem.itemCost <= user_account.points:
-                        if not purchased_items.filter(item=purchaseitem).exists():  # checking they have not already bought the item
+                        if not purchases.objects.filter(item=purchaseitem,user__user=user).exists():  # checking they have not already bought the item
                             try:
                                 user = user_account
                                 item = purchaseitem
@@ -222,7 +223,6 @@ def profile_view(request, username=None):
                 except items.DoesNotExist:  # if for whatever reason there isn't a corresponding item
                     print("no cosmetic owned")
                     pass
-            return redirect("points")  # Reload the page to show updated points
     return render(request, "accounts/profile.html", {
         "user": user,
         "user_account": user_account,
