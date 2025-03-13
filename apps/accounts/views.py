@@ -75,6 +75,7 @@ def points_view(request):
         #for handling points for demonstrative purposes - will be removed once actual point gains are added
         if action == "addpoints":
             user_account.points += 5  # Increase points by 5
+            user_account.total_points += 5
             user_account.save()
         else:
             action_request = action.split(" ")

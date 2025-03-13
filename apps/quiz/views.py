@@ -65,9 +65,31 @@ def submit_quiz(request, category_id):
         if score > user_quiz_score.highest_score:
             additional_points = points - user_quiz_score.highest_score // 20
             user_account.points += additional_points
+            user_account.total_points += additional_points
             user_account.save()
+            # give Point Collector badge if user's lifetime points reach 100
+            if user_account.total_points >= 100:
+                collector_badge, created = Badge.objects.get_or_create(name="Point Collector", defaults={
+                    "description": "Awarded for collecting 100 total points.",
+                    "icon": "badges/point_collector.png"
+                })
+                if not UserBadge.objects.filter(user=request.user, badge=collector_badge).exists():
+                    UserBadge.objects.create(user=request.user, badge=collector_badge)
+                    messages.success(request, "You've earned the 'Point Collector' badge!")
+            # Check and Award Point Hoarder Badge if lifetime reaches 500
+            if user_account.total_points >= 500:
+                hoarder_badge, created = Badge.objects.get_or_create(name="Point Hoarder", defaults={
+                    "description": "Awarded for collecting 500 total points.",
+                    "icon": "badges/point_hoarder.png"
+                })
+                if not UserBadge.objects.filter(user=request.user, badge=hoarder_badge).exists():
+                    UserBadge.objects.create(user=request.user, badge=hoarder_badge)
+                    messages.success(request, "You've earned the 'Point Hoarder' badge!")
+
             user_quiz_score.highest_score = score
             user_quiz_score.save()
+
+
 
         # Award "Quiz Master" Badge if score is 100%
         if score == 100:
