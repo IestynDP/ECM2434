@@ -9,7 +9,6 @@ from apps.accounts.models import account, items, purchases  # Updated path
 from apps.accounts.forms import UserProfileForm, AccountForm, RestaurantForm, ItemForm # Updated path
 from django.utils.timezone import now
 from apps.accounts.models import Restaurant, CheckIn  # Updated path
-import os
 
 # we can use this for a wide variety of things that we only want admins to be able to do
 def is_admin(user):
@@ -150,7 +149,6 @@ def profile_view(request, username=None):
     user_account, created = account.objects.get_or_create(user=user)  # Ensure account exists
     # setting up the querysets of dbs relating to the user
     try:
-        print(user_account)
         purchased_items = items.objects.filter(purchases__user__user=user).distinct()#getting the purchased items as a list
         not_purchased_items = items.objects.exclude(purchases__user__user=user)#getting not purchased items
         hatslot = "nohat.PNG"
@@ -173,7 +171,6 @@ def profile_view(request, username=None):
     # Check if the button was clicked
     if request.method == "POST":
         action = request.POST.get("action")
-        print(action)
         # for handling points for demonstrative purposes - will be removed once actual point gains are added
         if action == "addpoints":
             user_account.points += 5  # Increase points by 5
@@ -193,7 +190,6 @@ def profile_view(request, username=None):
                             try:
                                 user = user_account
                                 item = purchaseitem
-                                print(user, item)
                                 purchases.objects.create(user=user, item=item, equipState=0)
                                 user_account.points -= purchaseitem.itemCost
                                 user_account.save()
@@ -219,10 +215,8 @@ def profile_view(request, username=None):
                         # flipping the equipped boolean
                         toequip.equipState = not current_equipState
                         toequip.save()
-                        print(toequip.equipState, equipitem.itemName)
                 except items.DoesNotExist:  # if for whatever reason there isn't a corresponding item
                     print("no cosmetic owned")
-                    pass
     return render(request, "accounts/profile.html", {
         "user": user,
         "user_account": user_account,
