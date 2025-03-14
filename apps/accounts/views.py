@@ -151,21 +151,19 @@ def profile_view(request, username=None):
     try:
         purchased_items = items.objects.filter(purchases__user__user=user).distinct()#getting the purchased items as a list
         not_purchased_items = items.objects.exclude(purchases__user__user=user)#getting not purchased items
-        hatslot = "nohat.PNG"
         borderslot = "noborder.PNG"
-        namecardslot = "nonamecard.PNG"
+        namecardslot = "noborder.PNG"
     except account.DoesNotExist:
         user_account = None  # If no account exists, handle gracefully
     # Updating the avatar to reflect equipped cosmetics
     try:
         equipped = purchases.objects.filter(equipState=True, user__user=user)
         for x in equipped:
-            if x.item.itemslot == "hat":
-                hatslot = x.item.itemimage
             if x.item.itemslot == "namecard":
                 namecardslot = x.item.itemimage
             if x.item.itemslot == "border":
                 borderslot = x.item.itemimage
+                print(x.item.itemimage)
     except items.DoesNotExist:  # handles unexpected errors such as and item not existing
         pass
     # Check if the button was clicked
@@ -220,7 +218,6 @@ def profile_view(request, username=None):
     return render(request, "accounts/profile.html", {
         "user": user,
         "user_account": user_account,
-        "hat": hatslot,
         "border":borderslot,
         "namecard":namecardslot,
         "owned":purchased_items,

@@ -1,13 +1,32 @@
 {% extends "base.html" %}
+<style>
+.profile-image{
+    position:relative;
+    width: 200px;
+    height:200px;
+    overflow: hidden;
+}
+.base-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+</style>
 {% block content %}
     <h3>{{ user.username }}'s Profile</h3>
+    <div class="profile-image">
     {% if user_account %}
         {% if user_account.avatar %}
-        <img src="{{ user_account.avatar.url }}" alt="Profile Picture" width="150">
+        <img src="{{ user_account.avatar.url }}" alt="Profile Picture" class="base-image" width="200px" height="200px">
         {% else %}
             <p>No profile picture uploaded.</p>
         {% endif %}
     {% endif %}
+    <img src="{{ border }}" alt="Border" class="base-image" height="200px" width="200px">
+    </div>
 
     <p><strong>First Name:</strong> {{ user.first_name }}</p>
     <p><strong>Last Name:</strong> {{ user.last_name }}</p>
