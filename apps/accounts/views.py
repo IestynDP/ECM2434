@@ -151,23 +151,25 @@ def profile_view(request, username=None):
     try:
         purchased_items = items.objects.filter(purchases__user__user=user).distinct()#getting the purchased items as a list
         not_purchased_items = items.objects.exclude(purchases__user__user=user)#getting not purchased items
-        borderslot = "noborder.PNG"
-        namecardslot = "noborder.PNG"
+        borderslot = ""
+        headerslot=""
     except account.DoesNotExist:
         user_account = None  # If no account exists, handle gracefully
     # Updating the avatar to reflect equipped cosmetics
     try:
         equipped = purchases.objects.filter(equipState=True, user__user=user)
         for x in equipped:
-            if x.item.itemslot == "namecard":
-                namecardslot = x.item
+            if x.item.itemslot == "header":
+                headerslot = x.item
             if x.item.itemslot == "border":
                 borderslot = x.item
+
     except items.DoesNotExist:  # handles unexpected errors such as and item not existing
         pass
     # Check if the button was clicked
     if request.method == "POST":
         action = request.POST.get("action")
+        print(action)
         # for handling points for demonstrative purposes - will be removed once actual point gains are added
         if action == "addpoints":
             user_account.points += 5  # Increase points by 5
@@ -200,25 +202,39 @@ def profile_view(request, username=None):
                     print("no item found")
                     pass
             if action_request[0] == "equip":  # equipping items
-                try:
-                    equipitem = items.objects.get(itemName=action_request[1])
-                    if purchases.objects.filter(item=equipitem).exists():
-                        toequip = purchases.objects.filter(item=equipitem).first()#if, for some reason there is duplicaton, this won't break
-                        current_equipState = toequip.equipState
-                        equipped = purchases.objects.filter(item__itemslot=equipitem.itemslot, equipState=True)
-                        # unequipping all ites in that slot
-                        for x in equipped:
-                            x.equipState = False
-                        # flipping the equipped boolean
-                        toequip.equipState = not current_equipState
-                        toequip.save()
-                except items.DoesNotExist:  # if for whatever reason there isn't a corresponding item
-                    print("no cosmetic owned")
+                if action_request[0] == "equip":  # Equipping items
+                    try:
+                        equipitem = items.objects.get(itemName=action_request[1])
+
+                        if purchases.objects.filter(item=equipitem).exists():
+                            toequip = purchases.objects.filter(item=equipitem).first()  # Get the first instance safely
+                            current_equipState = toequip.equipState
+
+                            # Unequip all items in the same slot
+                            equipped_items = purchases.objects.filter(item__itemslot=equipitem.itemslot,
+                                                                      equipState=True)
+                            for item in equipped_items:
+                                item.equipState = False
+                                item.save()  # Ensure changes are saved
+
+                            # Flip the equip state for the selected item
+                            toequip.equipState = not current_equipState
+                            toequip.save()
+                    except items.DoesNotExist:  # if for whatever reason there isn't a corresponding item
+                        print("no cosmetic owned")
+                    return render(request, "accounts/profile.html", {
+                        "user": user,
+                        "user_account": user_account,
+                        "border": borderslot,
+                        "header": headerslot,
+                        "owned": purchased_items,
+                        "purchaseable": not_purchased_items
+                    })
     return render(request, "accounts/profile.html", {
         "user": user,
         "user_account": user_account,
         "border":borderslot,
-        "namecard":namecardslot,
+        "header":headerslot,
         "owned":purchased_items,
         "purchaseable":not_purchased_items
     })

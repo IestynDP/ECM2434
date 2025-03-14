@@ -16,9 +16,13 @@
     height: 200px;
     object-fit: cover;
 }
+
 </style>
 {%endblock%}
 {% block content %}
+{% if header.itemimage %}
+      <img class="background" src="{{ header.itemimage.url }}" alt="Header" width = 100%>
+{% endif %}
     <h3>{{ user.username }}'s Profile</h3>
     <div class="profile-image">
     {% if user_account %}
@@ -28,7 +32,9 @@
             <p>No profile picture uploaded.</p>
         {% endif %}
     {% endif %}
+    {% if border.itemimage %}
     <img src="{{border.itemimage.url}}" alt="Border" class="base-image" >
+    {% endif %}
     </div>
 
     <p><strong>First Name:</strong> {{ user.first_name }}</p>
@@ -90,9 +96,9 @@
     <form method="post">
         {% csrf_token %}
         {% for item in owned %}
+            <table border="1">
         <tr>
             <td>{{item.itemName}}</td>
-            <td>{{ item.itemCost}}</td>
             <td>{{ items.itemimage}}</td>
             <td>{{ item.itemslot}}</td>
             <td><form method = "POST">
@@ -101,7 +107,7 @@
             </form></td>
             {% endfor %}
         </tr>
-
+</table>
     <a href="{% url 'home' %}">Home</a>
 
     <br> <br>
