@@ -160,10 +160,9 @@ def profile_view(request, username=None):
         equipped = purchases.objects.filter(equipState=True, user__user=user)
         for x in equipped:
             if x.item.itemslot == "namecard":
-                namecardslot = x.item.itemimage
+                namecardslot = x.item
             if x.item.itemslot == "border":
-                borderslot = x.item.itemimage
-                print(x.item.itemimage)
+                borderslot = x.item
     except items.DoesNotExist:  # handles unexpected errors such as and item not existing
         pass
     # Check if the button was clicked

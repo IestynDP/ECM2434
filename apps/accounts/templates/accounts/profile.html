@@ -1,31 +1,34 @@
 {% extends "base.html" %}
+{% block extra_css %}
 <style>
 .profile-image{
     position:relative;
     width: 200px;
     height:200px;
     overflow: hidden;
+    background-color: lightgray;
 }
 .base-image {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: auto;
+    width: 200px;
+    height: 200px;
     object-fit: cover;
 }
 </style>
+{%endblock%}
 {% block content %}
     <h3>{{ user.username }}'s Profile</h3>
     <div class="profile-image">
     {% if user_account %}
         {% if user_account.avatar %}
-        <img src="{{ user_account.avatar.url }}" alt="Profile Picture" class="base-image" width="200px" height="200px">
+        <img src="{{ user_account.avatar.url }}" alt="Profile Picture" class="base-image">
         {% else %}
             <p>No profile picture uploaded.</p>
         {% endif %}
     {% endif %}
-    <img src="{{ border }}" alt="Border" class="base-image" height="200px" width="200px">
+    <img src="{{border.itemimage.url}}" alt="Border" class="base-image" >
     </div>
 
     <p><strong>First Name:</strong> {{ user.first_name }}</p>
