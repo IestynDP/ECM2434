@@ -151,21 +151,27 @@ def profile_view(request, username=None):
     try:
         purchased_items = items.objects.filter(purchases__user__user=user).distinct()#getting the purchased items as a list
         not_purchased_items = items.objects.exclude(purchases__user__user=user)#getting not purchased items
-        borderslot = ""
-        headerslot=""
+        try:
+            equipped = purchases.objects.filter(equipState=True, user__user=user)
+            for x in equipped:
+                if x.item.itemslot == "header":
+                    headerslot = x.item
+                if x.item.itemslot == "border":
+                    borderslot = x.item
+                print(x.item.itemName)
+        except items.DoesNotExist:  # handles unexpected errors such as and item not existing
+            pass
+        #if no items are equipped
+        try:
+            borderslot
+        except:
+            borderslot = ""
+        try:
+            headerslot
+        except:
+            headerslot=""
     except account.DoesNotExist:
         user_account = None  # If no account exists, handle gracefully
-    # Updating the avatar to reflect equipped cosmetics
-    try:
-        equipped = purchases.objects.filter(equipState=True, user__user=user)
-        for x in equipped:
-            if x.item.itemslot == "header":
-                headerslot = x.item
-            if x.item.itemslot == "border":
-                borderslot = x.item
-
-    except items.DoesNotExist:  # handles unexpected errors such as and item not existing
-        pass
     # Check if the button was clicked
     if request.method == "POST":
         action = request.POST.get("action")
@@ -205,19 +211,11 @@ def profile_view(request, username=None):
                 if action_request[0] == "equip":  # Equipping items
                     try:
                         equipitem = items.objects.get(itemName=action_request[1])
-
                         if purchases.objects.filter(item=equipitem).exists():
                             toequip = purchases.objects.filter(item=equipitem).first()  # Get the first instance safely
                             current_equipState = toequip.equipState
-
                             # Unequip all items in the same slot
-                            equipped_items = purchases.objects.filter(item__itemslot=equipitem.itemslot,
-                                                                      equipState=True)
-                            for item in equipped_items:
-                                item.equipState = False
-                                item.save()  # Ensure changes are saved
 
-                            # Flip the equip state for the selected item
                             toequip.equipState = not current_equipState
                             toequip.save()
                     except items.DoesNotExist:  # if for whatever reason there isn't a corresponding item
