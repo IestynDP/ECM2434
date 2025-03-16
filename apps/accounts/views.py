@@ -175,7 +175,6 @@ def profile_view(request, username=None):
     # Check if the button was clicked
     if request.method == "POST":
         action = request.POST.get("action")
-        print(action)
         # for handling points for demonstrative purposes - will be removed once actual point gains are added
         if action == "addpoints":
             user_account.points += 5  # Increase points by 5
@@ -207,27 +206,27 @@ def profile_view(request, username=None):
                 except items.DoesNotExist:  # if for whatever reason there isn't a corresponding item
                     print("no item found")
                     pass
-            if action_request[0] == "equip":  # equipping items
-                if action_request[0] == "equip":  # Equipping items
-                    try:
-                        equipitem = items.objects.get(itemName=action_request[1])
-                        if purchases.objects.filter(item=equipitem).exists():
-                            toequip = purchases.objects.filter(item=equipitem).first()  # Get the first instance safely
-                            current_equipState = toequip.equipState
-                            # Unequip all items in the same slot
-
-                            toequip.equipState = not current_equipState
-                            toequip.save()
-                    except items.DoesNotExist:  # if for whatever reason there isn't a corresponding item
-                        print("no cosmetic owned")
-                    return render(request, "accounts/profile.html", {
-                        "user": user,
-                        "user_account": user_account,
-                        "border": borderslot,
-                        "header": headerslot,
-                        "owned": purchased_items,
-                        "purchaseable": not_purchased_items
+        if action_request[0] == "equip":  # Equipping items
+            try:
+                equipitem = items.objects.get(itemName=action_request[1])
+                if purchases.objects.filter(item=equipitem,user=user_account).exists():
+                    purchases.objects.filter(user=user_account,item__itemslot=equipitem.itemslot).exclude(item=equipitem).update(equipState=False)
+                    toequip = purchases.objects.filter(item=equipitem).first()  # Get the first instance safely
+                    current_equipState = toequip.equipState
+                    toequip.equipState = not current_equipState
+                    toequip.save()
+            except items.DoesNotExist:  # if for whatever reason there isn't a corresponding item
+                print("no cosmetic owned")
+            print("b",borderslot,"h",headerslot)
+            return render(request, "accounts/profile.html", {
+                    "user": user,
+                    "user_account": user_account,
+                    "border": borderslot,
+                    "header": headerslot,
+                    "owned": purchased_items,
+                    "purchaseable": not_purchased_items
                     })
+    print("b", borderslot, "h", headerslot)
     return render(request, "accounts/profile.html", {
         "user": user,
         "user_account": user_account,
