@@ -243,7 +243,7 @@ def profile_view(request, username=None):
                 if x.item.itemslot == "border":
                     borderslot = x.item
                 print(x.item.itemName)
-        except items.DoesNotExist:  # handles unexpected errors such as and item not existing
+        except items.DoesNotExist:  # handles unexpected errors such as an item not existing
             pass
         #if no items are equipped
         try:
