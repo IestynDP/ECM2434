@@ -53,7 +53,7 @@ class Restaurant(models.Model):
     
     def qr_code_base64(self):
         # Create QR code image
-        qr = qrcode.make(self.name)  # You can change this to any field of the restaurant
+        qr = qrcode.make(self.qrCodeID)  # You can change this to any field of the restaurant
         buffered = BytesIO()
         qr.save(buffered, format="PNG")
         # Convert image to base64
