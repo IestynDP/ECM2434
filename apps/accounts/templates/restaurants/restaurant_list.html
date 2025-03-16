@@ -1,26 +1,150 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block content %}
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        main {
+            text-align: center;
+        }
+        .restaurant-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        .restaurant-box {
+            width: 120px;
+            height: 120px;
+            border-radius: 10px;
+            background-color: #E1BF91;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-align: center;
+            padding: 10px;
+        }
+        .restaurant-box img {
+            width: 60%;
+            height: 60%;
+            object-fit: contain;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 400px;
+        }
+        .close {
+            cursor: pointer;
+            float: right;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<main>
     <h2>Sustainable Restaurants</h2>
-    {% if request.user.is_staff %}
-        <a href="{% url 'add_restaurant' %}" class="admin-button">Add Restaurant</a>
-    {% endif %}
-    <ul>
+    <form method="GET" action="{% url 'restaurant_list' %}">
+        <input type="text" name="q" placeholder="Search restaurants..." value="{{ request.GET.q }}">
+        <button type="submit">Search</button>
+    </form>
+    
+    <div class="restaurant-container">
         {% for restaurant in restaurants %}
-            <li>
-                <h3>{{ restaurant.name }}</h3>
-                <p>{{ restaurant.description }}</p>
-                <p><strong>Location:</strong> {{ restaurant.location }}</p>
-                <p><strong>Eco-Friendly Features:</strong> {{ restaurant.sustainability_features }}</p>
-
-                <!-- Check-In Button -->
-                <form method="post" action="{% url 'check_in' restaurant.id %}">
-                    {% csrf_token %}
-                    <button type="submit">Check In</button>
-                </form>
-            </li>
+            <div class="restaurant-box" onclick="openModal('{{ restaurant.id }}')">
+                <img src="{% static 'restaurant-icon.png' %}" alt="Restaurant">
+                <div>{{ restaurant.name }}</div>
+            </div>
         {% empty %}
-            <p>No restaurants added yet.</p>
+            <p>No restaurants found.</p>
         {% endfor %}
-    </ul>
+    </div>
+</main>
+
+<div id="restaurantModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3 id="modal-name"></h3>
+        <p id="modal-description"></p>
+        <p><strong>Location:</strong> <span id="modal-location"></span></p>
+        <p><strong>Eco-Friendly Features:</strong> <span id="modal-features"></span></p>
+        
+        <!-- QR Code only visible if staff -->
+        <div id="modal-qr-container" style="display:none;">
+            <p><strong>QR Code:</strong></p>
+            <img id="modal-qr" src="" alt="QR Code">
+        </div>
+
+        <form method="post" id="check-in-form">
+            {% csrf_token %}
+            <button type="submit">Check In</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function openModal(restaurantId) {
+    fetch(`/accounts/restaurants/${restaurantId}/`)
+        .then(response => {
+            // Log the response status code
+            console.log('Response status:', response.status);
+
+            // Check if response is successful (status code 200)
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            return response.json();
+        })
+        .then(data => {
+            console.log('Restaurant data:', data);  // Log the data here
+
+            if (data.error) {
+                alert('Error loading restaurant details');
+                return;
+            }
+
+            // Populate modal with restaurant data
+            document.getElementById('modal-name').textContent = data.name;
+            document.getElementById('modal-description').textContent = data.description;
+            document.getElementById('modal-location').textContent = data.location;
+            document.getElementById('modal-features').textContent = data.sustainability_features;
+
+            // Handle QR code for staff
+            if (data.qr_base64) {
+                document.getElementById('modal-qr').src = `data:image/png;base64,${data.qr_base64}`;
+                document.getElementById('modal-qr-container').style.display = 'block';  // Show the QR code section
+            } else {
+                document.getElementById('modal-qr-container').style.display = 'none';  // Hide QR code section if not available
+            }
+
+            // Update the action for the check-in form
+            document.getElementById('check-in-form').action = `/qr/scan-qr/`;
+
+            // Show the modal
+            document.getElementById('restaurantModal').style.display = 'flex';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading restaurant details 2');
+        });
+}
+
+</script>
 {% endblock %}
+
+
