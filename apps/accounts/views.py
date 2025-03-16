@@ -391,6 +391,7 @@ def download_data(request):
 # ALL RESTAURANT CODE GOES BETWEEN HERE
 
 
+
 def generate_unique_qr_code():
     # Generate a unique 16-character alphanumeric QR Code, only querying the DB after migration
     qr_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
@@ -415,16 +416,22 @@ def add_restaurant(request):
         if form.is_valid():
             restaurant = form.save(commit=False)
             restaurant.owner = request.user  # Assign the logged-in admin as the owner
-            restaurant.save()  # Ensure the restaurant is saved
+            
+            restaurant.save()  # ✅ Force Django to generate an ID
 
-            # Refresh the object to ensure it has an ID
-            restaurant.refresh_from_db()  # This ensures restaurant.id is available
+            # Refresh to ensure the ID is generated
+            restaurant.refresh_from_db()
+
+            # Now assign the QR Code ID
+            restaurant.qrCodeID = generate_unique_qr_code()
+            restaurant.save()  # ✅ Save again with the QR Code
 
             return redirect("restaurant_list")
     else:
         form = RestaurantForm()
 
     return render(request, "restaurants/add_restaurant.html", {"form": form})
+
 
 def restaurant_list(request):
     query = request.GET.get("q")  # Get search query from URL
