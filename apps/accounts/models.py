@@ -6,6 +6,7 @@ from encrypted_model_fields.fields import EncryptedCharField
 class account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     points = models.IntegerField(default=0)
+    total_points = models.IntegerField(default=0)  # Total lifetime points
     bio = models.TextField(blank=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
 
@@ -21,7 +22,7 @@ class items(models.Model):
     itemName = models.CharField(max_length=100,default="")
     itemCost = models.IntegerField(default = 20)
     itemimage = models.CharField(max_length=500,default="ItemImage")
-    itemslot = models.CharField(max_length=50, default="")
+    itemslot = models.CharField(max_length=20)
 
 #holds which items a user has purchased
 class purchases(models.Model):
@@ -52,3 +53,20 @@ class CheckIn(models.Model):
 
     def __str__(self):
         return f"{self.user.username} checked into {self.restaurant.name}"
+
+class Badge(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField()
+    icon = models.ImageField(upload_to="badges/")  # Stores badge images in media/badges/
+
+    def __str__(self):
+        return self.name
+
+class UserBadge(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
+    earned_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.badge.name}"
+

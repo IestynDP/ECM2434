@@ -1,7 +1,15 @@
 {% extends "base.html" %}
-
 {% block content %}
 {% load static %}
+
+{% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+    </div>
+{% endif %}
+
 <style>
     .main {
   display: grid;
@@ -48,6 +56,8 @@
         {% csrf_token %}
         <h3>Hats</h3>
         <button type="submit" name="action" value ="purchase tophat">Purchase a tophat</button>
+        <button type="submit" name="action" value ="purchase plant">Purchase a plant hat</button>
+
     </form>
     <!--Equipping Items-->
     <h1>Equip Items</h1>
@@ -55,6 +65,7 @@
         <h3>Hats</h3>
         {% csrf_token %}
         <button type="submit" name="action" value ="equip tophat">Equip a tophat</button>
+        <button type="submit" name="action" value ="equip plant">Equip a plant hat</button>
     </form>
     <h1>My Avatar</h1>
     <div class="main">
