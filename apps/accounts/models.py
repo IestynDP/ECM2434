@@ -36,13 +36,13 @@ class purchases(models.Model):
     
 
 class Restaurant(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)  # Business owner
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField()
     location = models.CharField(max_length=255)
     sustainability_features = models.TextField()
-    verified = models.BooleanField(default=False)  # Will be used for verification later
-    qrCodeID = models.CharField(max_length=16, unique=True, default=generate_unique_qr_code)
+    verified = models.BooleanField(default=False)
+    qrCodeID = models.CharField(max_length=16, unique=True, default="generate_unique_qr_code")
 
     def __str__(self):
         return self.name
