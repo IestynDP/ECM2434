@@ -20,6 +20,8 @@ from django.utils.timezone import now
 from apps.accounts.models import Restaurant, CheckIn, items, purchases, account # Updated path
 from apps.accounts.models import Restaurant, CheckIn  # Updated path
 import os
+from django.http import JsonResponse
+from apps.accounts.models import Restaurant
 
 # we can use this for a wide variety of things that we only want admins to be able to do
 def is_admin(user):
@@ -366,20 +368,40 @@ def restaurant_list(request):
     return render(request, "restaurants/restaurant_list.html", {"restaurants": restaurants})
 
 def restaurant_details(request, restaurant_id):
-    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+    try:
+        restaurant = Restaurant.objects.get(id=restaurant_id)
 
-    # Generate QR code only if user is admin
-    qr_base64 = None
-    if request.user.is_staff:
-        qr = qrcode.make(restaurant.qrCodeID)
-        buffer = BytesIO()
-        qr.save(buffer, format="PNG")
-        qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+        data = {
+            'id': restaurant.id,
+            'name': restaurant.name,
+            'description': restaurant.description,
+            'location': restaurant.location,
+            'sustainability_features': restaurant.sustainability_features,
+            'qr_base64': restaurant.qr_code_base64()  # This will now work
+        }
 
-    return render(request, "restaurants/restaurant_details.html", {
-        "restaurant": restaurant,
-        "qr_base64": qr_base64,  # Pass QR code data to template
-    })
+        return JsonResponse(data)
+
+    except Restaurant.DoesNotExist:
+        return JsonResponse({'error': 'Restaurant not found'}, status=404)
+
+
+
+def restaurant_details(request, restaurant_id):
+    try:
+        restaurant = Restaurant.objects.get(id=restaurant_id)
+        data = {
+            'id': restaurant.id,
+            'name': restaurant.name,
+            'description': restaurant.description,
+            'location': restaurant.location,
+            'sustainability_features': restaurant.sustainability_features,
+        }
+        if request.user.is_staff:
+            data['qr_base64'] = restaurant.qr_code_base64()
+        return JsonResponse(data)
+    except Restaurant.DoesNotExist:
+        return JsonResponse({'error': 'Restaurant not found'}, status=404)
 
 @login_required
 def check_in(request, restaurant_id):

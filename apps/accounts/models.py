@@ -3,6 +3,9 @@ from django.db import models, connection
 from django.contrib.auth.models import User
 from encrypted_model_fields.fields import EncryptedCharField
 from .utils import generate_unique_qr_code
+import qrcode
+from io import BytesIO 
+import base64
 
 # Create your models here.
 class account(models.Model):
@@ -33,7 +36,8 @@ class purchases(models.Model):
     equipState = models.BooleanField(default=False)
 
     #tasks
-    
+
+
 
 class Restaurant(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)  # Business owner
@@ -46,6 +50,15 @@ class Restaurant(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def qr_code_base64(self):
+        # Create QR code image
+        qr = qrcode.make(self.name)  # You can change this to any field of the restaurant
+        buffered = BytesIO()
+        qr.save(buffered, format="PNG")
+        # Convert image to base64
+        qr_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+        return qr_base64
 
 def generate_unique_qr_code():
 # Generate a unique 16-character alphanumeric QR Code, only querying the DB after migration
