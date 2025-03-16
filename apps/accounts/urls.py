@@ -13,6 +13,7 @@ urlpatterns = [
     path("profile/", views.profile_view, name="profile"),
     path("profile/<str:username>/", views.profile_view, name="profile_with_username"),
     path("add-restaurant/", views.add_restaurant, name="add_restaurant"),
+    path('restaurants/', views.restaurant_list, name='restaurant_list'),
     path("items-management/", views.manage_items, name="manage-items"),
     path("restaurants/", views.restaurant_list, name="restaurant_list"),
     path("check-in/<int:restaurant_id>/", views.check_in, name="check_in"),
@@ -20,5 +21,6 @@ urlpatterns = [
     path("privacy-policy/", views.privacy_policy, name="privacy_policy"),
     path("download-data/", views.download_data, name="download_data"),
     path("info/", views.info, name="info"),
+    path('restaurants/<int:restaurant_id>/', views.restaurant_details, name='restaurant_details'),
 ]
 
