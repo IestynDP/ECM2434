@@ -12,6 +12,8 @@ env/
 db/db.sqlite3  # Updated path
 #*.sqlite3
 
+staticfiles/
+
 # Logs
 logs/
 *.log
