@@ -1,14 +1,45 @@
 {% extends "base.html" %}
+{% block extra_css %}
+<style>
+.profile-image{
+    position:relative;
+    width: 200px;
+    height:200px;
+    overflow: hidden;
+    background-color: lightgray;
+}
+.base-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+}
+.header{
+    width: 100%;
+    height:200px;
+}
 
+</style>
+{%endblock%}
 {% block content %}
+{% if header.itemimage %}
+      <img class="header" src="{{ header.itemimage.url }}" alt="Header" width = 100%>
+{% endif %}
     <h3>{{ user.username }}'s Profile</h3>
+    <div class="profile-image">
     {% if user_account %}
         {% if user_account.avatar %}
-        <img src="{{ user_account.avatar.url }}" alt="Profile Picture" width="150">
+        <img src="{{ user_account.avatar.url }}" alt="Profile Picture" class="base-image">
         {% else %}
             <p>No profile picture uploaded.</p>
         {% endif %}
     {% endif %}
+    {% if border.itemimage %}
+    <img src="{{border.itemimage.url}}" alt="Border" class="base-image" >
+    {% endif %}
+    </div>
 
     <p><strong>First Name:</strong> {{ user.first_name }}</p>
     <p><strong>Last Name:</strong> {{ user.last_name }}</p>
@@ -43,7 +74,46 @@
             style="display: inline-block; padding: 8px 12px; background: #008CBA; color: white; text-decoration: none; border-radius: 5px;">
             Edit Profile
         </a>
-    {% endif %}
+        <p>You have {{ user_account.points }} points.</p>
+    <form method="post">
+        {% csrf_token %} <!-- Protects against CSRF attacks -->
+        <button type="submit" name="action" value="addpoints">I turned off a light</button>
+    </form>
+    <h1>Purchase Items</h1>
+    <form method="post">
+        {% csrf_token %}
+        {% for item in purchaseable %}
+        <tr>
+            <td>{{item.itemName}}</td>
+            <td>{{ item.itemCost}}</td>
+            <td>{{ items.itemimage.url}}</td>
+            <td>{{ item.itemslot}}</td>
+            <td><form method = "POST">
+                {% csrf_token %}
+                <button type="submit" name="action" value ="purchase {{item.itemName}}">Buy {{item.itemName }} {{item.itemslot }}</button>
+            </form></td>
+            {% endfor %}
+        </tr>
+
+    </form>
+    <!--Equipping Items-->
+    <h1>Equip Cosmetics</h1>
+    <form method="post">
+        {% csrf_token %}
+        {% for item in owned %}
+            <table border="1">
+        <tr>
+            <td>{{item.itemName}}</td>
+            <td>{{ items.itemimage}}</td>
+            <td>{{ item.itemslot}}</td>
+            <td><form method = "POST">
+                {% csrf_token %}
+                <button type="submit" name="action" value ="equip {{item.itemName}}">Use {{item.itemName }} {{item.itemslot }}</button>
+            </form></td>
+            {% endfor %}
+        </tr>
+</table>
+    <a href="{% url 'home' %}">Home</a>
 
     <br> <br>
     <form method="GET" action="{% url 'search_users' %}">
@@ -61,4 +131,6 @@
         {% csrf_token %}
         <button type="submit" style="background-color: red; color: white;">Delete Account</button>
     </form>
+     {% endif %}
+
 {% endblock %}

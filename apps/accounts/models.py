@@ -23,7 +23,7 @@ class items(models.Model):
     itemid = models.AutoField(primary_key=True)
     itemName = models.CharField(max_length=100,default="")
     itemCost = models.IntegerField(default = 20)
-    itemimage = models.CharField(max_length=500,default="ItemImage")
+    itemimage = models.ImageField(upload_to="items/")
     itemslot = models.CharField(max_length=20)
 
 #holds which items a user has purchased

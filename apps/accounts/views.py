@@ -19,7 +19,6 @@ from apps.accounts.forms import UserProfileForm, AccountForm, RestaurantForm, It
 from django.utils.timezone import now
 from apps.accounts.models import Restaurant, CheckIn, items, purchases, account # Updated path
 from apps.accounts.models import Restaurant, CheckIn  # Updated path
-import os
 
 # we can use this for a wide variety of things that we only want admins to be able to do
 def is_admin(user):
@@ -151,26 +150,13 @@ def manage_items(request):
                 item.delete()
         form = ItemForm(request.POST,request.FILES)
         if not form.is_valid():
-            print("bbbbb")
-            print(form.itemName)
+            print("error submitting form")
         if form.is_valid():
-            print("aaaaa")
-            #telling it not to commit the save
-            form.save(commit=False)
-            #making sure that the column itemimage has "itemname.PNG" in it
-            image = request.FILES["itemimage"]
-            image_extension = ".png"
-            image_filename = form.itemName+image_extension
-            items.itemimage= image_filename
-            # saving image to static (as it is going to be reused many times)
-            image_path = os.path.join("apps/accounts/static/"+image_filename,"wb")
-            with open(image_path, image) as f:
-                    for chunk in image.chunks():
-                        f.write(chunk)
+            form.save()
     #getting the lists of items/purchases for display
     itemslist = items.objects.order_by('itemid')
     purchaselist = purchases.objects.order_by('id')
-    return render(request, "pointsmanagement.html",{"items":itemslist,"purchases":purchaselist})
+    return render(request, "pointsmanagement.html",{"itemlist":itemslist,"purchaselist":purchaselist})
 
 
 @login_required
@@ -245,9 +231,93 @@ def profile_view(request, username=None):
         return redirect('profile_with_username', username=request.user.username)
     user = get_object_or_404(User, username=username)  # Fetch user by username
     user_account, created = account.objects.get_or_create(user=user)  # Ensure account exists
+    # setting up the querysets of dbs relating to the user
+    try:
+        purchased_items = items.objects.filter(purchases__user__user=user).distinct()#getting the purchased items as a list
+        not_purchased_items = items.objects.exclude(purchases__user__user=user)#getting not purchased items
+        try:
+            equipped = purchases.objects.filter(equipState=True, user__user=user)
+            for x in equipped:
+                if x.item.itemslot == "header":
+                    headerslot = x.item
+                if x.item.itemslot == "border":
+                    borderslot = x.item
+                print(x.item.itemName)
+        except items.DoesNotExist:  # handles unexpected errors such as and item not existing
+            pass
+        #if no items are equipped
+        try:
+            borderslot
+        except:
+            borderslot = ""
+        try:
+            headerslot
+        except:
+            headerslot=""
+    except account.DoesNotExist:
+        user_account = None  # If no account exists, handle gracefully
+    # Check if the button was clicked
+    if request.method == "POST":
+        action = request.POST.get("action")
+        # for handling points for demonstrative purposes - will be removed once actual point gains are added
+        if action == "addpoints":
+            user_account.points += 5  # Increase points by 5
+            user_account.save()
+        else:
+            action_request = action.split(" ")
+            if action_request[0] == "purchase":  # purchasing an item
+                try:
+                    purchaseitem = items.objects.get(itemName=action_request[1])  # item reference
+                    # checking if the user has enough points to buy the item
+                    if purchaseitem.itemCost > user_account.points:
+                        print("not enough points")
+                        pass
+                    # if they do, proceed
+                    if purchaseitem.itemCost <= user_account.points:
+                        if not purchases.objects.filter(item=purchaseitem,user__user=user).exists():  # checking they have not already bought the item
+                            try:
+                                user = user_account
+                                item = purchaseitem
+                                purchases.objects.create(user=user, item=item, equipState=0)
+                                user_account.points -= purchaseitem.itemCost
+                                user_account.save()
+                            except:  # handles unexpected failures
+                                print("All items in DB:", items.objects.values_list("itemName", flat=True))
+                                print("could not create purchase value")
+                                pass
+                    else:
+                        print("item already owned")
+                except items.DoesNotExist:  # if for whatever reason there isn't a corresponding item
+                    print("no item found")
+                    pass
+        if action_request[0] == "equip":  # Equipping items
+            try:
+                equipitem = items.objects.get(itemName=action_request[1])
+                if purchases.objects.filter(item=equipitem,user=user_account).exists():
+                    purchases.objects.filter(user=user_account,item__itemslot=equipitem.itemslot).exclude(item=equipitem).update(equipState=False)
+                    toequip = purchases.objects.filter(item=equipitem).first()  # Get the first instance safely
+                    current_equipState = toequip.equipState
+                    toequip.equipState = not current_equipState
+                    toequip.save()
+            except items.DoesNotExist:  # if for whatever reason there isn't a corresponding item
+                print("no cosmetic owned")
+            print("b",borderslot,"h",headerslot)
+            return render(request, "accounts/profile.html", {
+                    "user": user,
+                    "user_account": user_account,
+                    "border": borderslot,
+                    "header": headerslot,
+                    "owned": purchased_items,
+                    "purchaseable": not_purchased_items
+                    })
+    print("b", borderslot, "h", headerslot)
     return render(request, "accounts/profile.html", {
         "user": user,
         "user_account": user_account,
+        "border":borderslot,
+        "header":headerslot,
+        "owned":purchased_items,
+        "purchaseable":not_purchased_items
     })
     
 # Profile Searching
