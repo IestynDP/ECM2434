@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h3>{{ restaurant.name }}</h3>
+    <p>{{ restaurant.description }}</p>
+    <p><strong>Location:</strong> {{ restaurant.location }}</p>
+    <p><strong>Eco-Friendly Features:</strong> {{ restaurant.sustainability_features }}</p>
+
+    <!-- Only show QR code to admins -->
+    {% if request.user.is_staff %}
+        <p><strong>QR Code:</strong></p>
+        <img src="data:image/png;base64,{{ restaurant.qr_base64 }}" alt="QR Code for {{ restaurant.name }}">
+    {% endif %}
+
+    <!-- Check-In Button -->
+    <form method="post" action="{% url 'check_in' restaurant.id %}">
+        {% csrf_token %}
+        <button type="submit">Check In</button>
+    </form>
+{% endblock %}

@@ -2,6 +2,7 @@ import base64
 import random
 import string
 from django.db import connection
+from django.db.models import Q
 from io import BytesIO
 import qrcode
 from django.http import HttpResponse
@@ -310,17 +311,29 @@ def add_restaurant(request):
     return render(request, "restaurants/add_restaurant.html", {"form": form})
 
 def restaurant_list(request):
-    restaurants = Restaurant.objects.all()  # Fetch all restaurants
+    query = request.GET.get("q")  # Get search query from URL
+    restaurants = Restaurant.objects.all()
 
-    for restaurant in restaurants:
-        # Generate QR code if it doesn't already exist
+    if query:
+        restaurants = restaurants.filter(Q(name__icontains=query) | Q(location__icontains=query))
+
+    return render(request, "restaurants/restaurant_list.html", {"restaurants": restaurants})
+
+def restaurant_details(request, restaurant_id):
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+
+    # Generate QR code only if user is admin
+    qr_base64 = None
+    if request.user.is_staff:
         qr = qrcode.make(restaurant.qrCodeID)
         buffer = BytesIO()
         qr.save(buffer, format="PNG")
         qr_base64 = base64.b64encode(buffer.getvalue()).decode()
-        restaurant.qr_base64 = qr_base64  # Attach QR code to restaurant object
 
-    return render(request, "restaurants/restaurant_list.html", {"restaurants": restaurants})
+    return render(request, "restaurants/restaurant_details.html", {
+        "restaurant": restaurant,
+        "qr_base64": qr_base64,  # Pass QR code data to template
+    })
 
 @login_required
 def check_in(request, restaurant_id):
