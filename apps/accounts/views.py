@@ -1,13 +1,23 @@
+import base64
 import random
+import string
+from django.db import connection
+from django.db.models import Q
+from io import BytesIO
+import qrcode
+from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import JsonResponse # Updated path
+from apps.accounts.forms import UserProfileForm, AccountForm, RestaurantForm  # Updated path
 from django.http import JsonResponse
 from apps.accounts.models import account, items, purchases  # Updated path
 from apps.accounts.forms import UserProfileForm, AccountForm, RestaurantForm, ItemForm # Updated path
 from django.utils.timezone import now
+from apps.accounts.models import Restaurant, CheckIn, items, purchases, account # Updated path
 from apps.accounts.models import Restaurant, CheckIn  # Updated path
 import os
 
@@ -310,6 +320,23 @@ def download_data(request):
 
 # ALL RESTAURANT CODE GOES BETWEEN HERE
 
+
+def generate_unique_qr_code():
+    # Generate a unique 16-character alphanumeric QR Code, only querying the DB after migration
+    qr_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
+
+    # Check if the table exists before querying the database
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='accounts_restaurant';")
+        table_exists = cursor.fetchone() is not None  # True if the table exists
+
+    if table_exists:
+        while Restaurant.objects.filter(qrCodeID=qr_code).exists():
+            qr_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))  # Generate a new one if duplicate
+
+    return qr_code
+
+
 @login_required
 @user_passes_test(is_admin)
 def add_restaurant(request):
@@ -318,7 +345,11 @@ def add_restaurant(request):
         if form.is_valid():
             restaurant = form.save(commit=False)
             restaurant.owner = request.user  # Assign the logged-in admin as the owner
-            restaurant.save()
+            restaurant.save()  # Ensure the restaurant is saved
+
+            # Refresh the object to ensure it has an ID
+            restaurant.refresh_from_db()  # This ensures restaurant.id is available
+
             return redirect("restaurant_list")
     else:
         form = RestaurantForm()
@@ -326,8 +357,29 @@ def add_restaurant(request):
     return render(request, "restaurants/add_restaurant.html", {"form": form})
 
 def restaurant_list(request):
-    restaurants = Restaurant.objects.all  # Only show verified restaurants
+    query = request.GET.get("q")  # Get search query from URL
+    restaurants = Restaurant.objects.all()
+
+    if query:
+        restaurants = restaurants.filter(Q(name__icontains=query) | Q(location__icontains=query))
+
     return render(request, "restaurants/restaurant_list.html", {"restaurants": restaurants})
+
+def restaurant_details(request, restaurant_id):
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+
+    # Generate QR code only if user is admin
+    qr_base64 = None
+    if request.user.is_staff:
+        qr = qrcode.make(restaurant.qrCodeID)
+        buffer = BytesIO()
+        qr.save(buffer, format="PNG")
+        qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+
+    return render(request, "restaurants/restaurant_details.html", {
+        "restaurant": restaurant,
+        "qr_base64": qr_base64,  # Pass QR code data to template
+    })
 
 @login_required
 def check_in(request, restaurant_id):
@@ -350,6 +402,7 @@ def check_in(request, restaurant_id):
     user_account.save()
 
     return render(request, "restaurants/check_in_success.html", {"restaurant": restaurant})
+
 
 
 # AND HERE (just for organisation purposes ty ty, i'll tidy the rest up at some point)
