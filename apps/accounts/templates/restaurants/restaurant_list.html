@@ -2,13 +2,12 @@
 
 {% block content %}
     <h2>Sustainable Restaurants</h2>
-
     <!-- Search Form -->
     <form method="GET" action="{% url 'restaurant_list' %}">
         <input type="text" name="q" placeholder="Search restaurants..." value="{{ request.GET.q }}">
         <button type="submit">Search</button>
     </form>
-
+    {%if restaurant%}
     <ul>
         {% for restaurant in restaurants %}
             <li>
@@ -18,4 +17,7 @@
             <p>No restaurants found.</p>
         {% endfor %}
     </ul>
+    {%else%}
+    no restaurants found
+    {%endif%}
 {% endblock %}
