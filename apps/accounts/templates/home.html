@@ -53,6 +53,7 @@
             font-weight: bold;
             font-size: 14px;
         }
+        .info { background-color: #CBC0AC; }
         .restaurants { background-color: #E1BF91; }
         .qr { background-color: #AD8257; }
         .quiz { background-color: #EEE; color: #2D524A; }
@@ -79,7 +80,14 @@
         });
     </script>
     -->
-
+    
+    <div class="button-container">
+        <div class="button-wrapper">
+            <a href="{% url 'info' %}" class="round-button info">
+                <img src="{% static 'homepageicons/info-icon.png' %}" style="width:60%; height:60%;"alt="Info">
+            </a>
+            <div class="label">Info</div>
+        </div>
         <div class="button-wrapper">
             <a href="{% url 'restaurant_list' %}" class="round-button restaurants">
                 <img src="{% static 'homepageicons/restaurants-icon.png' %}" style="width:100%; height:100%;" alt="Restaurants">
