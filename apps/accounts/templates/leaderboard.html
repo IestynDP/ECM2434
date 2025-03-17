@@ -38,7 +38,7 @@
             border-collapse: collapse;
             margin-top: 10px;
             font-size: 1em;
-            min-width: 300px;
+            min-width: 200px;
         }
 
         th, td {
@@ -51,6 +51,7 @@
         th {
             background-color: #AD8257;
             color: white;
+            
         }
         
         .rank-1 { background-color: gold; }
@@ -82,9 +83,9 @@
         <div style="overflow-x: auto;">
             <table>
                 <tr>
-                    <th>Rank</th>
-                    <th>Username</th>
-                    <th>Points</th>
+                    <th style="max-width: 10px;">Rank</th>
+                    <th style="max-width: 20px;">Username</th>
+                    <th style="max-width: 20px;">Points</th>
                 </tr>
                 {% for player in top_players %}
                 <tr class="{% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% endif %}">
