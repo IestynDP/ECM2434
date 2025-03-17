@@ -20,7 +20,7 @@ def quiz(request, category_id):
     category = Category.objects.get(id=category_id)
     questions = Question.objects.filter(category=category)
     return render(request, 'quiz.html',
-                  {'category': category, 'questions': questions})
+                {'category': category, 'questions': questions})
 
 
 @login_required

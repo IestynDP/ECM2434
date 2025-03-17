@@ -1,6 +1,11 @@
-from django.db import models
+import random, string
+from django.db import models, connection
 from django.contrib.auth.models import User
 from encrypted_model_fields.fields import EncryptedCharField
+from .utils import generate_unique_qr_code
+import qrcode
+from io import BytesIO 
+import base64
 
 # Create your models here.
 class account(models.Model):
@@ -21,7 +26,7 @@ class items(models.Model):
     itemid = models.AutoField(primary_key=True)
     itemName = models.CharField(max_length=100,default="")
     itemCost = models.IntegerField(default = 20)
-    itemimage = models.CharField(max_length=500,default="ItemImage")
+    itemimage = models.ImageField(upload_to="items/")
     itemslot = models.CharField(max_length=20)
 
 #holds which items a user has purchased
@@ -31,7 +36,9 @@ class purchases(models.Model):
     equipState = models.BooleanField(default=False)
 
     #tasks
-    
+
+
+
 class Restaurant(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)  # Business owner
     name = models.CharField(max_length=255, unique=True)
@@ -39,9 +46,35 @@ class Restaurant(models.Model):
     location = models.CharField(max_length=255)
     sustainability_features = models.TextField()
     verified = models.BooleanField(default=False)  # Will be used for verification later
+    qrCodeID = models.CharField(max_length=16, unique=True, default=generate_unique_qr_code)
 
     def __str__(self):
         return self.name
+    
+    def qr_code_base64(self):
+        # Create QR code image
+        qr = qrcode.make(self.qrCodeID)  # You can change this to any field of the restaurant
+        buffered = BytesIO()
+        qr.save(buffered, format="PNG")
+        # Convert image to base64
+        qr_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+        return qr_base64
+
+def generate_unique_qr_code():
+# Generate a unique 16-character alphanumeric QR Code, only querying the DB after migration
+    qr_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
+
+    # Check if the table exists before querying the database
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='accounts_restaurant';")
+        table_exists = cursor.fetchone() is not None  # True if the table exists
+
+    if table_exists:
+        while Restaurant.objects.filter(qrCodeID=qr_code).exists():
+            qr_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))  # Generate a new one if duplicate
+
+    return qr_code
+
 
 class CheckIn(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # User who checked in
