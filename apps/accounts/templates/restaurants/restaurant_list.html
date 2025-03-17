@@ -111,7 +111,7 @@
     <div class="restaurant-container">
         {% for restaurant in restaurants %}
             <div class="restaurant-box" onclick="openModal('{{ restaurant.id }}')">
-                <img src="{% static 'restaurant-icon.png' %}" alt="Restaurant">
+                <img src="{% static '/homepageicons/info-icon.png' %}" alt="Restaurant">
                 <div>{{ restaurant.name }}</div>
             </div>
         {% empty %}
