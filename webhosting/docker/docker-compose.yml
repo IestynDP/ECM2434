@@ -9,8 +9,8 @@ services:
     command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - ../../:/app # Mounting the entire project directory
-      - /server/django/media:/app/media # Media files
-      - /server/django/static:/app/static # Static files
+      - ../../media:/app/media # Media files
+      - ../../static:/app/static # Static files
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings
       - DEBUG=0
@@ -29,8 +29,8 @@ services:
       - "80:80" # Expose HTTP for local testing
     volumes:
       - ../../webhosting/containers/nginx/nginx.conf:/etc/nginx/nginx.conf # Corrected path
-      - /server/django/static:/static # Static files
-      - /server/django/media:/media # Media files
+      - ../../static:/static # Static files
+      - ../../media:/media # Media files
     depends_on:
       - web
     networks:

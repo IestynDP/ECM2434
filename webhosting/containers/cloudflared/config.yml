@@ -1,0 +1,7 @@
+tunnel: 42e91be3-f4c2-44e4-849b-fda9c3f04a7d
+credentials-file: /etc/cloudflared/cert.pem # Updated path
+
+ingress:
+  - hostname: ecm2434.pixel-87.uk
+    service: http://django_app:8000 # Service URL (replace with your internal service)
+  - service: http_status:404 # Default route, if no other rules match
