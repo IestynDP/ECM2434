@@ -1,24 +1,71 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
-<!DOCTYPE html>
-<html>
 <head>
-    <title>{{ category.name }} Quiz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        main {
+            margin: 20px;
+            padding: 0px;
+            text-align: center;
+        }
+
+        .background {
+            width: 100vw;
+            height: auto;
+            z-index: -1;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .question-container {
+            margin-top: 20px;
+        }
+
+        .question-item {
+            background-color: #EEE;
+            border: 2px solid rgb(92, 64, 51, 0.6);
+            border-radius: 8px;
+            margin: 10px;
+            padding: 15px;
+        }
+
+        .question-item legend {
+            font-weight: bold;
+        }
+
+        .submit-btn {
+            background-color: #2D524A;
+            color: white;
+            padding: 10px 0px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            width: 20vw;
+        }
+
+        .submit-btn:hover {
+            background-color: #4B7D6E;
+        }
+    </style>
 </head>
-<body>
+<main>
     <h1>{{ category.name }} Quiz</h1>
     <form method="post" action="{% url 'submit_quiz' category.id %}">
         {% csrf_token %}
-        {% for question in questions %}
-            <fieldset>
-                <legend>{{ question.text }}</legend>
-                {% for answer in question.answer_set.all %}
-                    <input type="radio" name="{{ question.id }}" value="{{ answer.id }}"> {{ answer.text }}<br>
-                {% endfor %}
-            </fieldset>
-        {% endfor %}
-        <button type="submit">Submit</button>
+        <div class="question-container">
+            {% for question in questions %}
+                <fieldset class="question-item">
+                    <legend>{{ question.text }}</legend>
+                    {% for answer in question.answer_set.all %}
+                        <input type="radio" name="{{ question.id }}" value="{{ answer.id }}"> {{ answer.text }}<br>
+                    {% endfor %}
+                </fieldset>
+            {% endfor %}
+        </div>
+        <button class="submit-btn" type="submit">Submit</button>
     </form>
-</body>
-</html>
-{%endblock%}
+</main>
+{% endblock %}
