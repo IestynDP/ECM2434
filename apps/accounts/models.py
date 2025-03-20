@@ -1,7 +1,9 @@
 import random, string
 from django.db import models, connection
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from encrypted_model_fields.fields import EncryptedCharField
+from django.utils import timezone
 from .utils import generate_unique_qr_code
 import qrcode
 from io import BytesIO 
@@ -47,6 +49,7 @@ class Restaurant(models.Model):
     sustainability_features = models.TextField()
     verified = models.BooleanField(default=False)  # Will be used for verification later
     qrCodeID = models.CharField(max_length=16, unique=True, default=generate_unique_qr_code)
+    points = models.IntegerField(default=10)  # Points for checking in
 
     def __str__(self):
         return self.name
@@ -76,17 +79,35 @@ def generate_unique_qr_code():
     return qr_code
 
 
-class CheckIn(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)  # User who checked in
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)  # Where they checked in
-    timestamp = models.DateTimeField(auto_now_add=True)  # When they checked in
 
-    class Meta:
-        unique_together = ('user', 'restaurant', 'timestamp')  # Prevent duplicate check-ins per day
+class UserCheckIn(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    check_in_date = models.DateField()
 
+    def clean(self):
+        # Check if the user has already checked in today at the restaurant
+        if UserCheckIn.objects.filter(user=self.user, restaurant=self.restaurant, check_in_date=timezone.now().date()).exists():
+            raise ValidationError("You have already checked in at this restaurant today.")
+    
+    def save(self, *args, **kwargs):
+        # Validate the check-in before saving
+        self.clean()
+        super().save(*args, **kwargs)
+        
     def __str__(self):
-        return f"{self.user.username} checked into {self.restaurant.name}"
+        return f'{self.user.username} checked in at {self.restaurant.name}'
 
+class CheckIn(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    check_in_date = models.DateTimeField(default=timezone.now)  # Set the default here
+    points_earned = models.IntegerField(default=0)
+    
+    def __str__(self):
+        return f"Check-in for {self.user.username} at {self.restaurant.name}"
+   
+    
 class Badge(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField()

@@ -11,10 +11,6 @@
     {% load static %}
     <style>
         .qr-scan-container {
-            background-image: url("{% static 'background.png' %}");
-            background-size: cover;
-            background-position: center; 
-            background-repeat: no-repeat; 
             height: 100vh;
             width: 100vw;
             margin: 0; 
@@ -48,89 +44,74 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            display: none;
         }
 
         #check-in-button:hover {
             background-color: #45a049; 
         }
-
-
+        
+        #invalid-message {
+            margin-top: 20px;
+            font-size: 18px;
+            color: red;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="qr-scan-container">
-        <h1>QR Code Scanner</h1>
-        <div id="qr-reader" style="width: 300px;"></div>
-        <span id="result"></span>
-        <button id="check-in-button" style="display: none;">Check In</button>
+        <div id="qr-reader"></div>
+        <div id="result"></div>
+        <button id="check-in-button">Check In</button>
+        <div id="invalid-message">Invalid QR Code</div>
     </div>
 
     <script>
-        let restaurantId = null;  // Variable to store the restaurant ID
+        const qrScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
+        qrScanner.render(onScanSuccess);
 
         function onScanSuccess(decodedText, decodedResult) {
-
-            // Send the scanned link to the backend to check if it's valid
+            const qr_codeid = decodedText;
             $.ajax({
-                url: "{% url 'check_restaurant_link' %}",
-                method: "POST",
-                data: {
-                    'qr_code': decodedText,
-                    'csrfmiddlewaretoken': '{{ csrf_token }}'
-                },
+                url: `{% url 'validate_qr' 'qr_codeid' %}`.replace('qr_codeid', qr_codeid),
+                type: 'GET',
                 success: function(response) {
-                    if (response.exists) {
-                        // If the link is valid, show the check-in button
-                        document.getElementById('check-in-button').style.display = 'block';
-                        restaurantId = response.restaurant_id;  // Store the restaurant ID
-                    } else {
-                        // If the link is invalid, hide the button and show an error
-                        document.getElementById('check-in-button').style.display = 'none';
-                        document.getElementById('result').innerText = "Invalid QR Code";
-                        document.getElementById('result').style.display = 'block';
+                    if (response.status === 'invalid') {
+                        $('#result').text('');
+                        $('#invalid-message').show();
+                        $('#check-in-button').hide();
+                    } else if (response.status === 'valid') {
+                        $('#invalid-message').hide();
+                        $('#result').text('Valid QR Code: ' + response.restaurant_name);
+                        $('#check-in-button').show();
+                        $('#check-in-button').off('click').on('click', function() {
+                            checkIn(response.restaurant_name, response.points);
+                        });
+                    } else if (response.status === 'checked_in') {
+                        $('#result').text('You have already checked in today at ' + response.restaurant_name);
+                        $('#check-in-button').hide();
                     }
-                },
-                error: function(xhr, status, error) {
-                    console.error("AJAX Error:", status, error);
-                    document.getElementById('result').innerText = "Error checking QR code.";
-                    document.getElementById('result').style.display = 'block';
                 }
             });
         }
 
-        // Handle the check-in button click
-        document.getElementById('check-in-button').addEventListener('click', function() {
-            if (restaurantId) {
-                // Send an AJAX request to the check_in view
-                $.ajax({
-                    url: "{% url 'check_in' 0 %}".replace("0", restaurantId),  // Replace 0 with the restaurant ID
-                    method: "POST",
-                    data: {
-                        'csrfmiddlewaretoken': '{{ csrf_token }}'
-                    },
-                    success: function(response) {
-                        if (response.status === 'success') {
-                            document.getElementById('result').innerText = "Congratulations! You just won 5 points!";
-                            document.getElementById('result').style.display = 'block';
-                        } else if(response.status === 'failed') {
-                            document.getElementById('result').innerText = "You already checked in today!";
-                            document.getElementById('result').style.display = 'block';
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("AJAX Error:", status, error);
-                        document.getElementById('result').innerText = "Error checking in.";
-                        document.getElementById('result').style.display = 'block';
+        function checkIn(restaurantName, points) {
+            $.ajax({
+                url: '{% url "check_in" %}',
+                type: 'POST',
+                data: {
+                    restaurant_name: restaurantName,
+                    points: points,
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        alert('You have checked in at ' + restaurantName + ' and gained ' + points + ' points!');
                     }
-                });
-            }
-        });
-
-        // Initialize the QR code scanner
-        let html5QrcodeScanner = new Html5QrcodeScanner(
-            "qr-reader", { fps: 10, qrbox: 250 }
-        );
-        html5QrcodeScanner.render(onScanSuccess);
+                }
+            });
+        }
     </script>
 </body>
 </html>
