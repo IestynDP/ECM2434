@@ -17,8 +17,7 @@ from django.http import JsonResponse
 from apps.accounts.models import account, items, purchases  # Updated path
 from apps.accounts.forms import UserProfileForm, AccountForm, RestaurantForm, ItemForm # Updated path
 from django.utils.timezone import now
-from apps.accounts.models import Restaurant, CheckIn, items, purchases, account # Updated path
-from apps.accounts.models import Restaurant, CheckIn  # Updated path
+from apps.accounts.models import Restaurant, items, purchases, account, QRCodeScan # Updated path
 import os
 from django.http import JsonResponse
 from apps.accounts.models import Restaurant
@@ -481,28 +480,20 @@ def restaurant_details(request, restaurant_id):
     except Restaurant.DoesNotExist:
         return JsonResponse({'error': 'Restaurant not found'}, status=404)
 
-@login_required
 def check_in(request, restaurant_id):
+    # Get the restaurant by ID, or return a 404 if not found
     restaurant = get_object_or_404(Restaurant, id=restaurant_id)
-    user = request.user
 
-    # Check if the user has already checked in today
-    today_checkin = CheckIn.objects.filter(user=user, restaurant=restaurant, timestamp__date=now().date()).exists()
-
-    if today_checkin:
-        # Prevent multiple check-ins in a single day
-        return render(request, "restaurants/check_in_failed.html", {"restaurant": restaurant})
-
-    # Record the check-in
-    CheckIn.objects.create(user=user, restaurant=restaurant)
-
-    # Award points to the user
-    user_account, created = account.objects.get_or_create(user=user)
-    user_account.points += 10  # Award 10 points per check-in (can adjust later)
-    user_account.save()
-
-    return render(request, "restaurants/check_in_success.html", {"restaurant": restaurant})
-
-
+    # Optionally, you can add logic for QR code scanning or user check-in
+    # For example, record the check-in in the QRCodeScan model
+    if request.user.is_authenticated:
+        # Create a new check-in (QR code scan) record
+        QRCodeScan.objects.create(
+            user=request.user,
+            restaurant=restaurant
+        )
+        return HttpResponse(f"Checked in at {restaurant.name}!")
+    else:
+        return HttpResponse("You must be logged in to check in.")
 
 # AND HERE (just for organisation purposes ty ty, i'll tidy the rest up at some point)

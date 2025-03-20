@@ -1,27 +1,47 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from datetime import date
-from apps.accounts.models import Restaurant, UserCheckIn
-from django.shortcuts import render
+from apps.accounts.models import Restaurant, QRCodeScan
+from django.utils import timezone
 
-def qr_scan(request):
-    # Your logic for handling QR scanning
-    return render(request, 'qr_scanner/scan.html')
+from django.shortcuts import render, get_object_or_404
+from apps.accounts.models import Restaurant, QRCodeScan
+from django.http import HttpResponse
 
-@login_required
-def qr_scanner(request):
-    return render(request, 'qr_scanner.html')
 
-@login_required
-def validate_qr(request, qr_codeid):
-    # Check if the QR code matches a valid restaurant
-    try:
-        restaurant = Restaurant.objects.get(qr_codeid=qr_codeid)
-        # Check if the user has already checked in today
-        today = date.today()
-        if UserCheckIn.objects.filter(user=request.user, restaurant=restaurant, check_in_date=today).exists():
-            return JsonResponse({'status': 'checked_in', 'restaurant_name': restaurant.name})
-        return JsonResponse({'status': 'valid', 'restaurant_name': restaurant.name, 'points': restaurant.points})
-    except Restaurant.DoesNotExist:
-        return JsonResponse({'status': 'invalid'})
+
+def qr_scan_view(request):
+    return render(request, 'qr_scan/qr_scan.html')
+
+def scan_qr(request):
+    if request.method == 'POST':
+        import json
+        data = json.loads(request.body)
+        qr_code_id = data.get('qrCodeID')
+
+        try:
+            # Find the restaurant with the given QR Code ID
+            restaurant = Restaurant.objects.get(qrCodeID=qr_code_id)
+        except Restaurant.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Invalid QR code.'}, status=400)
+
+        user = request.user  # Assuming the user is authenticated
+
+        # Check if the user has already scanned the restaurant's QR code today
+        today = timezone.now().date()
+        existing_scan = QRCodeScan.objects.filter(user=user, restaurant=restaurant, scan_date=today).first()
+
+        if existing_scan:
+            # If scan exists, return a message indicating the user already scanned
+            return JsonResponse({'success': False, 'message': 'You have already scanned this QR code today.'})
+
+        # If no previous scan exists, create a new scan record
+        QRCodeScan.objects.create(user=user, restaurant=restaurant, scan_date=today)
+
+        # Return success message with check-in details
+        return JsonResponse({
+            'success': True,
+            'message': f"Successfully checked into {restaurant.name}. You gained {restaurant.points} points!",
+            'restaurant_name': restaurant.name,
+            'restaurant_points': restaurant.points
+        })
+    return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=400)

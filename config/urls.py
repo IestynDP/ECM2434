@@ -28,7 +28,7 @@ def redirect_to_login(request):
 urlpatterns = [
     path('admin/', admin.site.urls),  # Django admin panel
     path('accounts/', include('apps.accounts.urls')),  # Updated path
-    path("qr/", include("apps.qr_scanner.urls")),  # Updated path
+    path("qr_scanner/", include("apps.qr_scanner.urls")),  # Updated path
     path("", redirect_to_login),  # Redirect root URL to login page
     path("accounts/", include("apps.accounts.urls")),  # Updated path
     path('quiz/', include('apps.quiz.urls')),  # Updated path

@@ -79,35 +79,6 @@ def generate_unique_qr_code():
     return qr_code
 
 
-
-class UserCheckIn(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
-    check_in_date = models.DateField()
-
-    def clean(self):
-        # Check if the user has already checked in today at the restaurant
-        if UserCheckIn.objects.filter(user=self.user, restaurant=self.restaurant, check_in_date=timezone.now().date()).exists():
-            raise ValidationError("You have already checked in at this restaurant today.")
-    
-    def save(self, *args, **kwargs):
-        # Validate the check-in before saving
-        self.clean()
-        super().save(*args, **kwargs)
-        
-    def __str__(self):
-        return f'{self.user.username} checked in at {self.restaurant.name}'
-
-class CheckIn(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
-    check_in_date = models.DateTimeField(default=timezone.now)  # Set the default here
-    points_earned = models.IntegerField(default=0)
-    
-    def __str__(self):
-        return f"Check-in for {self.user.username} at {self.restaurant.name}"
-   
-    
 class Badge(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField()
@@ -123,4 +94,16 @@ class UserBadge(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.badge.name}"
+    
+
+class QRCodeScan(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # The user who scanned
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)  # The restaurant scanned
+    scan_date = models.DateField(default=timezone.now)  # Store the date of the scan
+
+    class Meta:
+        unique_together = ('user', 'restaurant', 'scan_date')  # Ensure one scan per day per user per restaurant
+
+    def __str__(self):
+        return f"{self.user.username} scanned {self.restaurant.name} on {self.scan_date}"
 
