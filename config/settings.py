@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-p_^s$58^4_o*%)zxi^!p(e5h$5q&r#$+c9ksgn%8@y8y6cdn%k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["10.207.137.196","127.0.0.1"]
+ALLOWED_HOSTS = ["10.10.0.12","127.0.0.1"]
 
 
 # Application definition
@@ -38,9 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.accounts.apps.AccountsConfig',  # Updated path
-    'apps.quiz',  # Updated path
-    'apps.qr_scanner',  # Updated path
+    'apps.accounts.apps.AccountsConfig',
+    'apps.quiz',
+    'apps.qr_scanner',  
+    'django_extensions'
 ]
 
 MIDDLEWARE = [
