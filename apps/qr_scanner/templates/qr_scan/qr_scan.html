@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <style>
+        /* Custom styles */
+        #scanner-container {
+            width: 100%;
+            height: 400px;
+            background-color: #e0e0e0; /* Ensures the container is visible */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #checkin-button {
+            display: none;
+        }
+        #message-box {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Scan QR Code</h1>
+
+    <!-- QR Code Scanner Container -->
+    <div id="scanner-container">
+        <p>Loading camera...</p>
+    </div>
+
+    <!-- Check-in Button -->
+    <button id="checkin-button">Check-in</button>
+
+    <!-- Message Box -->
+    <div id="message-box"></div>
+
+    <script>
+        const qrCodeID = ""; // You will set this dynamically in your JavaScript
+        const restaurantName = ""; // Set this dynamically too
+
+        // Check camera access and start the QR scanner
+        function checkCameraPermission() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                console.log("Requesting camera access...");
+
+                // Try to access the camera
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function(stream) {
+                        // Access granted, start the scanner
+                        console.log("Camera access granted.");
+                        startScanner(stream);
+                    })
+                    .catch(function(err) {
+                        // Handle error or denied permission
+                        console.error("Camera access denied: ", err);
+                        document.getElementById('message-box').innerHTML = "Camera access denied. Please grant camera permissions.";
+                    });
+            } else {
+                console.error("Your browser doesn't support media devices.");
+                document.getElementById('message-box').innerHTML = "Your browser doesn't support camera access.";
+            }
+        }
+
+        // Initialize HTML5 QR Code Scanner
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`QR Code Scanned: ${decodedText}`);
+            checkQRCode(decodedText);
+        }
+
+        function onScanFailure(error) {
+            console.warn(`Scan Failure: ${error}`);
+            // Optionally handle errors if needed
+        }
+
+        function checkQRCode(decodedText) {
+            fetch(`/scan_qr/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ qrCodeID: decodedText }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.already_scanned) {
+                        document.getElementById('message-box').innerHTML = "You already scanned today.";
+                    } else {
+                        document.getElementById('checkin-button').style.display = "inline-block";
+                        document.getElementById('checkin-button').onclick = function () {
+                            alert(`You've checked into ${data.restaurant_name} and gained ${data.restaurant_points} points!`);
+                        };
+                    }
+                } else {
+                    document.getElementById('message-box').innerHTML = "Invalid QR Code.";
+                }
+            })
+            .catch(err => {
+                console.error("Error checking QR Code: ", err);
+                document.getElementById('message-box').innerHTML = "Error processing QR Code.";
+            });
+        }
+
+        // Start the QR scanner
+        function startScanner(stream) {
+            const html5QrCode = new Html5Qrcode("scanner-container");
+
+            // Set up video element for displaying the stream
+            const videoElement = document.createElement('video');
+            videoElement.srcObject = stream;
+            videoElement.play();
+            document.getElementById('scanner-container').appendChild(videoElement);
+
+            // Start the scanner and handle success/error
+            html5QrCode.start(
+                { facingMode: "environment" }, // Try changing to "user" for front camera
+                { fps: 10, qrbox: 250 },
+                onScanSuccess,
+                onScanFailure
+            )
+            .then(() => {
+                console.log("QR Scanner started successfully.");
+                document.getElementById('scanner-container').innerHTML = ''; // Clear "loading" message once scanner is initialized
+            })
+            .catch(err => {
+                console.error("Error starting the scanner: ", err);
+                document.getElementById('message-box').innerHTML = "Camera error: " + err;
+                document.getElementById('scanner-container').innerHTML = "<p>Unable to access camera. Please check your permissions.</p>";
+            });
+        }
+
+        // Initialize the camera permission check and QR scanner
+        checkCameraPermission();
+    </script>
+
+</body>
+
+</html>
+{% endblock %}

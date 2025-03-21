@@ -1,7 +1,9 @@
 import random, string
 from django.db import models, connection
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from encrypted_model_fields.fields import EncryptedCharField
+from django.utils import timezone
 from .utils import generate_unique_qr_code
 import qrcode
 from io import BytesIO 
@@ -47,6 +49,7 @@ class Restaurant(models.Model):
     sustainability_features = models.TextField()
     verified = models.BooleanField(default=False)  # Will be used for verification later
     qrCodeID = models.CharField(max_length=16, unique=True, default=generate_unique_qr_code)
+    points = models.IntegerField(default=10)  # Points for checking in
 
     def __str__(self):
         return self.name
@@ -76,17 +79,6 @@ def generate_unique_qr_code():
     return qr_code
 
 
-class CheckIn(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)  # User who checked in
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)  # Where they checked in
-    timestamp = models.DateTimeField(auto_now_add=True)  # When they checked in
-
-    class Meta:
-        unique_together = ('user', 'restaurant', 'timestamp')  # Prevent duplicate check-ins per day
-
-    def __str__(self):
-        return f"{self.user.username} checked into {self.restaurant.name}"
-
 class Badge(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField()
@@ -102,4 +94,16 @@ class UserBadge(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.badge.name}"
+    
+
+class QRCodeScan(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # The user who scanned
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)  # The restaurant scanned
+    scan_date = models.DateField(default=timezone.now)  # Store the date of the scan
+
+    class Meta:
+        unique_together = ('user', 'restaurant', 'scan_date')  # Ensure one scan per day per user per restaurant
+
+    def __str__(self):
+        return f"{self.user.username} scanned {self.restaurant.name} on {self.scan_date}"
 

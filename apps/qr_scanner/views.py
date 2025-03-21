@@ -1,42 +1,47 @@
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.utils.timezone import now
-from apps.accounts.models import CheckIn,account,Restaurant
+from apps.accounts.models import Restaurant, QRCodeScan
+from django.utils import timezone
 
-@login_required  
-def qr_scan(request):
-    return render(request, "qr_scanner/qr_scan.html")
+from django.shortcuts import render, get_object_or_404
+from apps.accounts.models import Restaurant, QRCodeScan
+from django.http import HttpResponse
 
-@csrf_exempt
-def check_restaurant_link(request):
+
+
+def qr_scan_view(request):
+    return render(request, 'qr_scan/qr_scan.html')
+
+def scan_qr(request):
     if request.method == 'POST':
-        qr_code = request.POST.get('qr_code')
+        import json
+        data = json.loads(request.body)
+        qr_code_id = data.get('qrCodeID')
+
         try:
-            restaurant = Restaurant.objects.get(qrCodeID=qr_code)
-            return JsonResponse({'exists': True, 'restaurant_id': restaurant.id})
+            # Find the restaurant with the given QR Code ID
+            restaurant = Restaurant.objects.get(qrCodeID=qr_code_id)
         except Restaurant.DoesNotExist:
-            return JsonResponse({'exists': False})
-    return JsonResponse({'error': 'Invalid request method'}, status=400)
-    
-    
-@csrf_exempt
-@login_required
-def check_in(request, restaurant_id):
-    if request.method == 'POST':
-        restaurant = get_object_or_404(Restaurant, id=restaurant_id)
-        user = request.user
+            return JsonResponse({'success': False, 'message': 'Invalid QR code.'}, status=400)
 
-        if CheckIn.objects.filter(user=user, restaurant=restaurant, timestamp__date=now().date()).exists():
-            return JsonResponse({'status': 'failed', 'message': 'you already checked in today!'})
+        user = request.user  # Assuming the user is authenticated
 
-        CheckIn.objects.create(user=user, restaurant=restaurant)
+        # Check if the user has already scanned the restaurant's QR code today
+        today = timezone.now().date()
+        existing_scan = QRCodeScan.objects.filter(user=user, restaurant=restaurant, scan_date=today).first()
 
-        user_account, created = account.objects.get_or_create(user=user)
-        user_account.points += 5
-        user_account.save()
+        if existing_scan:
+            # If scan exists, return a message indicating the user already scanned
+            return JsonResponse({'success': False, 'message': 'You have already scanned this QR code today.'})
 
-        return JsonResponse({'status': 'success', 'message': 'you gained 5 points'})
-    return JsonResponse({'error': 'Invalid request method'}, status=400)
+        # If no previous scan exists, create a new scan record
+        QRCodeScan.objects.create(user=user, restaurant=restaurant, scan_date=today)
+
+        # Return success message with check-in details
+        return JsonResponse({
+            'success': True,
+            'message': f"Successfully checked into {restaurant.name}. You gained {restaurant.points} points!",
+            'restaurant_name': restaurant.name,
+            'restaurant_points': restaurant.points
+        })
+    return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=400)

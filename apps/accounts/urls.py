@@ -1,6 +1,7 @@
 from django.urls import path
 from apps.accounts import views  # Updated path
 from . import views
+from django.urls import path, include
 
 urlpatterns = [
     path('register/', views.register, name='register'),
@@ -22,5 +23,6 @@ urlpatterns = [
     path("download-data/", views.download_data, name="download_data"),
     path("info/", views.info, name="info"),
     path('restaurants/<int:restaurant_id>/', views.restaurant_details, name='restaurant_details'),
+    path('qr_scanner/', include('apps.qr_scanner.urls')),
 ]
 
