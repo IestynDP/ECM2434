@@ -9,28 +9,29 @@ services:
     command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - ../../:/app # Mounting the entire project directory
-      - ../../media:/app/media # Media files
-      - ../../static:/app/static # Static files
+      - static_volume:/app/staticfiles # Changed to use named volume
+      - media_volume:/app/media # Changed to use named volume
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings
       - DEBUG=0
       - ALLOWED_HOSTS=*
-    expose:
-      - "8000" # Internal port for Nginx to connect
+    ports:
+      - 8000:8000
     networks:
       - webnet
 
-  # Nginx Reverse Proxy
+  # Nginx Service
   nginx:
-    image: nginx:latest
+    image: nginx:alpine
     container_name: nginx
     restart: unless-stopped
     ports:
-      - "80:80" # Expose HTTP for local testing
+      - "80:80"
+      - "443:443"
     volumes:
-      - ../../webhosting/containers/nginx/nginx.conf:/etc/nginx/nginx.conf # Corrected path
-      - ../../static:/static # Static files
-      - ../../media:/media # Media files
+      - ../../webhosting/containers/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
     depends_on:
       - web
     networks:
@@ -41,14 +42,17 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
     restart: unless-stopped
-    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
-    volumes:
-      - ../../webhosting/containers/cloudflared/config.yml:/etc/cloudflared/config.yml
-      - ../../webhosting/containers/cloudflared/cert.pem:/etc/cloudflared/cert.pem
+    command: tunnel --no-autoupdate run --url http://django_app:8000 --token ${TUNNEL_TOKEN}
     environment:
       - TUNNEL_TOKEN=${TUNNEL_TOKEN}
     networks:
       - webnet
+    depends_on:
+      - nginx
+
+volumes:
+  static_volume:
+  media_volume:
 
 networks:
   webnet:

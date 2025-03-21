@@ -28,15 +28,14 @@ SECRET_KEY = 'django-insecure-p_^s$58^4_o*%)zxi^!p(e5h$5q&r#$+c9ksgn%8@y8y6cdn%k
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "10.207.129.237",
     "127.0.0.1",
-    "10.10.0.56",
-    "10.207.159.148",
-    "ecm2434a.pixel-87.uk"  # Add your domain here
+    "localhost",
+    "ecm2434b.pixel-87.uk",
+    "*" # For development only, remove in production
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://ecm2434a.pixel-87.uk',  # Add your domain here
+    'https://ecm2434b.pixel-87.uk',  # Add your domain here
 ]
 
 
@@ -136,10 +135,11 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 # Media files
 MEDIA_URL = '/media/'

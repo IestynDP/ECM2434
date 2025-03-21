@@ -12,17 +12,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Ensure the static directory exists
-RUN mkdir -p /app/static
-
-# Ensure the STATIC_ROOT directory exists
+# Create necessary directories
 RUN mkdir -p /app/staticfiles
+RUN mkdir -p /app/media
 
-# Debugging steps
-RUN echo "Current directory:" && pwd
-RUN echo "Contents of /app:" && ls -la /app
+# Set permissions
+RUN chmod -R 755 /app/staticfiles
+RUN chmod -R 755 /app/media
 
 # Collect static files
-RUN python manage.py collectstatic --noinput  # Ensure this line is present
+RUN python manage.py collectstatic --noinput
+
+EXPOSE 8000
 
 CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
