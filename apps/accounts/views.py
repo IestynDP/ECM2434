@@ -17,10 +17,11 @@ from django.http import JsonResponse
 from apps.accounts.models import account, items, purchases  # Updated path
 from apps.accounts.forms import UserProfileForm, AccountForm, RestaurantForm, ItemForm # Updated path
 from django.utils.timezone import now
-from apps.accounts.models import Restaurant, items, purchases, account, QRCodeScan # Updated path
+from apps.accounts.models import Restaurant, items, purchases, account,UserCheckIn # Updated path
 import os
 from django.http import JsonResponse
 from apps.accounts.models import Restaurant
+from django.utils import timezone
 
 # we can use this for a wide variety of things that we only want admins to be able to do
 def is_admin(user):
@@ -480,20 +481,19 @@ def restaurant_details(request, restaurant_id):
     except Restaurant.DoesNotExist:
         return JsonResponse({'error': 'Restaurant not found'}, status=404)
 
-def check_in(request, restaurant_id):
-    # Get the restaurant by ID, or return a 404 if not found
-    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
-
-    # Optionally, you can add logic for QR code scanning or user check-in
-    # For example, record the check-in in the QRCodeScan model
-    if request.user.is_authenticated:
-        # Create a new check-in (QR code scan) record
-        QRCodeScan.objects.create(
-            user=request.user,
-            restaurant=restaurant
-        )
-        return HttpResponse(f"Checked in at {restaurant.name}!")
-    else:
-        return HttpResponse("You must be logged in to check in.")
 
 # AND HERE (just for organisation purposes ty ty, i'll tidy the rest up at some point)
+
+
+def check_in(request, restaurant_id):
+    # Get the restaurant object
+    restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
+    
+    # Check if the user has already checked in today at the same restaurant
+    if UserCheckIn.objects.filter(user=request.user, restaurant=restaurant, scan_date=timezone.now().date()).exists():
+        return HttpResponse("You have already checked in today at this restaurant.", status=400)
+
+    # If not, create a new check-in entry
+    UserCheckIn.objects.create(user=request.user, restaurant=restaurant, scan_date=timezone.now().date())
+
+    return HttpResponse(f"Checked in successfully at {restaurant.name}!", status=200)

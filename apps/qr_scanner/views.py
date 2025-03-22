@@ -1,47 +1,77 @@
-from django.shortcuts import render
 from django.http import JsonResponse
-from apps.accounts.models import Restaurant, QRCodeScan
-from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from apps.accounts.models import Restaurant, UserCheckIn, account
+from django.views.decorators.csrf import csrf_exempt
+from datetime import date
+import json
+from django.shortcuts import render
+from django.core.exceptions import ObjectDoesNotExist
 
-from django.shortcuts import render, get_object_or_404
-from apps.accounts.models import Restaurant, QRCodeScan
-from django.http import HttpResponse
-
-
-
+# QR Scan View (just renders the scanner page)
 def qr_scan_view(request):
     return render(request, 'qr_scan/qr_scan.html')
 
+# Scan QR (you can include the logic of scanning here if needed)
 def scan_qr(request):
+    return render(request, 'qr_scan/qr_scan.html')
+
+# This view handles the QR code check-in logic
+@login_required
+@csrf_exempt
+def checkin_qrcode(request):
     if request.method == 'POST':
-        import json
-        data = json.loads(request.body)
-        qr_code_id = data.get('qrCodeID')
-
         try:
-            # Find the restaurant with the given QR Code ID
-            restaurant = Restaurant.objects.get(qrCodeID=qr_code_id)
-        except Restaurant.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Invalid QR code.'}, status=400)
+            # Parse the incoming JSON body
+            data = json.loads(request.body)
 
-        user = request.user  # Assuming the user is authenticated
+            # Extract the qr_code_id from the parsed JSON data
+            qr_code_id = data.get('qr_code_id')  # Access qr_code_id from the parsed JSON
 
-        # Check if the user has already scanned the restaurant's QR code today
-        today = timezone.now().date()
-        existing_scan = QRCodeScan.objects.filter(user=user, restaurant=restaurant, scan_date=today).first()
+            if not qr_code_id:
+                return JsonResponse({'success': False, 'message': 'QR Code ID is missing'}, status=400)
 
-        if existing_scan:
-            # If scan exists, return a message indicating the user already scanned
-            return JsonResponse({'success': False, 'message': 'You have already scanned this QR code today.'})
+            # Find the restaurant matching the QR code
+            restaurant = Restaurant.objects.filter(qrCodeID=qr_code_id).first()
 
-        # If no previous scan exists, create a new scan record
-        QRCodeScan.objects.create(user=user, restaurant=restaurant, scan_date=today)
+            if restaurant is None:
+                return JsonResponse({'success': False, 'message': 'Invalid QR Code'}, status=400)
 
-        # Return success message with check-in details
-        return JsonResponse({
-            'success': True,
-            'message': f"Successfully checked into {restaurant.name}. You gained {restaurant.points} points!",
-            'restaurant_name': restaurant.name,
-            'restaurant_points': restaurant.points
-        })
-    return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=400)
+            # Use account instead of user
+            account = request.user.account  # Get the associated account of the logged-in user
+
+            # Check if the account has already checked in today
+            user_check_in = UserCheckIn.objects.filter(
+                account=account,  # Changed to account
+                restaurant=restaurant,
+                check_in_date=date.today()
+            ).first()
+
+            if user_check_in:
+                return JsonResponse({'success': True, 'already_scanned': True, 'message': 'You already scanned today'})
+
+            # If the account has not checked in, record the check-in and add points to the account
+            account.points += restaurant.points  # Add points to the account instead of user
+            account.total_points += restaurant.points
+            account.save()
+
+
+            # Record the check-in
+            UserCheckIn.objects.create(
+                account=account,  # Changed to account
+                restaurant=restaurant,
+            )
+
+            return JsonResponse({
+                'success': True,
+                'already_scanned': False,
+                'restaurant_name': restaurant.name,
+                'points': restaurant.points,
+                'total_points': account.points  # Changed to account
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+    else:
+        return JsonResponse({'success': False, 'message': 'Invalid request method. Please send a POST request.'}, status=400)
+
+

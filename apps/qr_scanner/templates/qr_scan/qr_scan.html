@@ -1,147 +1,308 @@
 {% extends "base.html" %}
+
 {% block content %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Scanner</title>
-    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <style>
-        /* Custom styles */
+        main {
+            margin: 0;
+            padding: 0;
+            height: 80vh;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 40px;
+
+        }
+
         #scanner-container {
+
+            max-width: 500px;  /* Limits width on large screens */
+            max-height: 380px;     /* Adjusted height */
+            height: 380px;
+            width: 500px;
+            background-color: #e0e0e0;
+            object-fit: cover;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid brown; /* Brown border for the container */
+            margin: 20px auto;        /* Centered with margin */
+        }
+
+        #message-box {
+            margin-top: 20px;
+            color: red;
+            text-align: center;
+        }
+
+        canvas {
+            display: none;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
             width: 100%;
-            height: 400px;
-            background-color: #e0e0e0; /* Ensures the container is visible */
-            display: flex;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
             justify-content: center;
             align-items: center;
         }
-        #checkin-button {
-            display: none;
+
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            text-align: center;
+            max-width: 400px; /* Ensure the modal doesn't stretch too wide */
+            border-radius: 8px;
         }
-        #message-box {
-            margin-top: 20px;
+
+        /* Success Modal: Green Text */
+        #successMessage {
+            color: green;
         }
+
+        /* Error Modal: Red Text */
+        #errorMessage {
+            color: red;
+        }
+
+        .modal-button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .modal-button:hover {
+            background-color: #45a049;
+        }
+
+        .modal-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Media Queries for mobile responsiveness */
+        @media screen and (max-width: 600px) {
+            #scanner-container {
+                max-height: 200px;  /* Adjust height for smaller screens */
+                max-width: 265px;
+                height: 200px;
+                width:265px;
+
+            }
+
+            h1 {
+                font-size: 24px;
+                margin: 40px;
+            }
+
+            .modal-content {
+                width: 80%;  /* Modal width takes up more space on small screens */
+                padding: 15px;
+            }
+
+            .modal-button {
+                width: 100%; /* Button takes up full width on mobile */
+                padding: 12px;
+            }
+        }
+
     </style>
 </head>
-
-<body>
-
+<main>
     <h1>Scan QR Code</h1>
 
-    <!-- QR Code Scanner Container -->
     <div id="scanner-container">
         <p>Loading camera...</p>
     </div>
 
-    <!-- Check-in Button -->
-    <button id="checkin-button">Check-in</button>
+    <canvas id="canvas" willReadFrequently="true"></canvas>
 
-    <!-- Message Box -->
     <div id="message-box"></div>
 
-    <script>
-        const qrCodeID = ""; // You will set this dynamically in your JavaScript
-        const restaurantName = ""; // Set this dynamically too
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" id="successModalClose">&times;</span>
+            <p id="successMessage">Valid</p>
+            <button class="modal-button" id="successModalButton">OK</button>
+        </div>
+    </div>
 
-        // Check camera access and start the QR scanner
+    <!-- Error Modal -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" id="errorModalClose">&times;</span>
+            <p id="errorMessage">Invalid</p>
+            <button class="modal-button" id="errorModalButton">OK</button>
+        </div>
+    </div>
+
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+    <script>
+        let video = null;
+        let canvas = document.getElementById("canvas");
+        let ctx = canvas.getContext("2d");
+
         function checkCameraPermission() {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 console.log("Requesting camera access...");
-
-                // Try to access the camera
                 navigator.mediaDevices.getUserMedia({ video: true })
                     .then(function(stream) {
-                        // Access granted, start the scanner
                         console.log("Camera access granted.");
                         startScanner(stream);
                     })
                     .catch(function(err) {
-                        // Handle error or denied permission
-                        console.error("Camera access denied: ", err);
-                        document.getElementById('message-box').innerHTML = "Camera access denied. Please grant camera permissions.";
+                        console.error("Camera access error: ", err);
+                        handleError(err, "An error occurred while trying to access the camera.");
                     });
             } else {
-                console.error("Your browser doesn't support media devices.");
-                document.getElementById('message-box').innerHTML = "Your browser doesn't support camera access.";
+                const errorMessage = "Your browser doesn't support media devices.";
+                console.error(errorMessage);
+                handleError(new Error(errorMessage), errorMessage);
             }
         }
 
-        // Initialize HTML5 QR Code Scanner
-        function onScanSuccess(decodedText, decodedResult) {
-            console.log(`QR Code Scanned: ${decodedText}`);
-            checkQRCode(decodedText);
+        function handleError(err, userMessage) {
+            console.error("Error details:", err);
+            document.getElementById('message-box').innerHTML = `Error: ${userMessage}`;
         }
 
-        function onScanFailure(error) {
-            console.warn(`Scan Failure: ${error}`);
-            // Optionally handle errors if needed
-        }
-
-        function checkQRCode(decodedText) {
-            fetch(`/scan_qr/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ qrCodeID: decodedText }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    if (data.already_scanned) {
-                        document.getElementById('message-box').innerHTML = "You already scanned today.";
-                    } else {
-                        document.getElementById('checkin-button').style.display = "inline-block";
-                        document.getElementById('checkin-button').onclick = function () {
-                            alert(`You've checked into ${data.restaurant_name} and gained ${data.restaurant_points} points!`);
-                        };
-                    }
-                } else {
-                    document.getElementById('message-box').innerHTML = "Invalid QR Code.";
-                }
-            })
-            .catch(err => {
-                console.error("Error checking QR Code: ", err);
-                document.getElementById('message-box').innerHTML = "Error processing QR Code.";
-            });
-        }
-
-        // Start the QR scanner
         function startScanner(stream) {
-            const html5QrCode = new Html5Qrcode("scanner-container");
+            video = document.createElement("video");
+            video.srcObject = stream;
+            video.play();
 
-            // Set up video element for displaying the stream
-            const videoElement = document.createElement('video');
-            videoElement.srcObject = stream;
-            videoElement.play();
-            document.getElementById('scanner-container').appendChild(videoElement);
+            video.style.width = "100%";
+            video.style.height = "100%";
 
-            // Start the scanner and handle success/error
-            html5QrCode.start(
-                { facingMode: "environment" }, // Try changing to "user" for front camera
-                { fps: 10, qrbox: 250 },
-                onScanSuccess,
-                onScanFailure
-            )
-            .then(() => {
-                console.log("QR Scanner started successfully.");
-                document.getElementById('scanner-container').innerHTML = ''; // Clear "loading" message once scanner is initialized
-            })
-            .catch(err => {
-                console.error("Error starting the scanner: ", err);
-                document.getElementById('message-box').innerHTML = "Camera error: " + err;
-                document.getElementById('scanner-container').innerHTML = "<p>Unable to access camera. Please check your permissions.</p>";
-            });
+            video.onloadedmetadata = function () {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const container = document.getElementById('scanner-container');
+                container.innerHTML = ''; 
+                container.appendChild(video); 
+                requestAnimationFrame(scanQRCode);
+            };
         }
 
-        // Initialize the camera permission check and QR scanner
+        function getCSRFToken() {
+            let csrfToken = null;
+            const csrfCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('csrftoken='));
+            if (csrfCookie) {
+                csrfToken = csrfCookie.split('=')[1];
+            }
+            return csrfToken;
+        }
+
+        function scanQRCode() {
+            if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                let code = jsQR(imageData.data, canvas.width, canvas.height);
+
+                if (code) {
+                    console.log("QR Code Scanned:", code.data);
+                    fetch('/qr_scanner/checkin_qrcode/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken()
+                        },
+                        body: JSON.stringify({ qr_code_id: code.data })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (data.already_scanned) {
+                                showModal('errorModal', "You have already checked in today.");
+                            } else {
+                                showModal('successModal', `You've successfully checked into ${data.restaurant_name} and earned ${data.points} points! Total points: ${data.total_points}`);
+                            }
+                        } else {
+                            showModal('errorModal', data.message || "An error occurred.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showModal('errorModal', "An error occurred while processing the QR code.");
+                    });
+                } else {
+                    requestAnimationFrame(scanQRCode);
+                }
+            } else {
+                requestAnimationFrame(scanQRCode);
+            }
+        }
+
+        function showModal(modalId, message) {
+            const modal = document.getElementById(modalId);
+            const messageElement = document.getElementById(modalId === 'successModal' ? 'successMessage' : 'errorMessage');
+
+            if (modal && messageElement) {
+                messageElement.innerHTML = message;
+                modal.style.display = 'flex';
+            } else {
+                console.error(`Modal with id ${modalId} or message element not found.`);
+            }
+
+            const modalButton = document.getElementById(`${modalId}Button`);
+            modalButton.onclick = function() {
+                modal.style.display = "none";
+                scanQRCode();
+            };
+        }
+
+        function modalClose(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+                scanQRCode();
+            } else {
+                console.error(`Modal with id ${modalId} not found.`);
+            }
+        }
+
+        document.getElementById('errorModalClose')?.addEventListener('click', function() {
+            modalClose('errorModal');
+        });
+
+        document.getElementById('successModalClose')?.addEventListener('click', function() {
+            modalClose('successModal');
+        });
+
         checkCameraPermission();
     </script>
-
-</body>
-
+</main>
 </html>
+
 {% endblock %}
