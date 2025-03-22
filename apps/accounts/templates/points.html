@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+{% load static %}
+
+{% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<style>
+    .main {
+  display: grid;
+  padding: 40px;
+  width: 400px;
+  border-radius: 20px;
+
+  align-items: center;
+  justify-items: center;
+
+  grid-template-columns: 9fr;
+  grid-template-rows: 9fr;
+}
+
+.avatarbase {
+  width: 1000px;
+
+  grid-area: 2 / 2;
+}
+
+.hat {
+  width:50px;
+    height:60px;
+  grid-area: 1 / 1;
+
+}
+</style>
+    <h1>Your Points</h1>
+    <p>Hi, {{ user.username }}!</p>
+
+    {% if user_account %}
+        <p>You have {{ user_account.points }} points.</p>
+    {% else %}
+        <p>You have 0 points.</p>
+    {% endif %}
+
+    <!-- Button inside a form to send a POST request -->
+    <form method="post">
+        {% csrf_token %} <!-- Protects against CSRF attacks -->
+        <button type="submit" name="action" value="addpoints">I turned off a light</button>
+    </form>
+    <h1>Purchase Items</h1>
+    <form method="post">
+        {% csrf_token %}
+        <h3>Hats</h3>
+        <button type="submit" name="action" value ="purchase tophat">Purchase a tophat</button>
+        <button type="submit" name="action" value ="purchase plant">Purchase a plant hat</button>
+
+    </form>
+    <!--Equipping Items-->
+    <h1>Equip Items</h1>
+    <form method="post">
+        <h3>Hats</h3>
+        {% csrf_token %}
+        <button type="submit" name="action" value ="equip tophat">Equip a tophat</button>
+        <button type="submit" name="action" value ="equip plant">Equip a plant hat</button>
+    </form>
+    <h1>My Avatar</h1>
+    <div class="main">
+        <div class="avatarbase"><img src="{% static "AvatarBase.PNG" %}"></div>
+        <div class="hat"><img src="{% static hat %}"></div>
+    </div>
+    <a href="{% url 'home' %}">Home</a>
+{% endblock %}
