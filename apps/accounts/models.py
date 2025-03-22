@@ -96,14 +96,13 @@ class UserBadge(models.Model):
         return f"{self.user.username} - {self.badge.name}"
     
 
-class QRCodeScan(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)  # The user who scanned
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)  # The restaurant scanned
-    scan_date = models.DateField(default=timezone.now)  # Store the date of the scan
+class UserCheckIn(models.Model):
+    account = models.ForeignKey(account, on_delete=models.CASCADE)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    check_in_date = models.DateField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'restaurant', 'scan_date')  # Ensure one scan per day per user per restaurant
+        unique_together = ('account', 'restaurant', 'check_in_date')  # Ensures only one check-in per day per restaurant
 
     def __str__(self):
-        return f"{self.user.username} scanned {self.restaurant.name} on {self.scan_date}"
-
+        return f"{self.account.user.username} checked into {self.restaurant.name} on {self.check_in_date}"

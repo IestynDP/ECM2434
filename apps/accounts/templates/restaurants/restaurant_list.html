@@ -179,7 +179,7 @@ function openModal(restaurantId) {
             }
 
             // Update the action for the check-in form
-            document.getElementById('check-in-form').action = `/qr/scan-qr/`;
+            document.getElementById('check-in-form').action = `/accounts/qr_scanner/qr_scanner/qr_scan/`;
 
             // Show the modal
             document.getElementById('restaurantModal').style.display = 'flex';
