@@ -139,9 +139,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
-    os.path.join(BASE_DIR, 'apps/qr_scanner/static/'),
-    os.path.join(BASE_DIR, 'apps/accounts/static/'),
 ]
+
 
 # Media files
 MEDIA_URL = '/media/'
