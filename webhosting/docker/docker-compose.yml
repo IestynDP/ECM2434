@@ -6,15 +6,18 @@ services:
       dockerfile: webhosting/docker/Dockerfile
     container_name: django_app
     restart: unless-stopped
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - ../../:/app # Mounting the entire project directory
-      - static_volume:/app/staticfiles # Changed to use named volume
-      - media_volume:/app/media # Changed to use named volume
+      - static_volume:/app/staticfiles # Static files volume
+      - media_volume:/app/media # Media files volume
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings
       - DEBUG=0
       - ALLOWED_HOSTS=*
+      - PYTHONUNBUFFERED=1 # Add this for better logging
     ports:
       - 8000:8000
     networks:
