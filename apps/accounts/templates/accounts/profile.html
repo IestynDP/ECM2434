@@ -1,136 +1,201 @@
 {% extends "base.html" %}
 {% block extra_css %}
 <style>
-.profile-image{
-    position:relative;
-    width: 200px;
-    height:200px;
-    overflow: hidden;
-    background-color: lightgray;
-}
-.base-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 200px;
+/* Header Image Container */
+.header-container {
+    position: relative;
+    width: 100%;
     height: 200px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
 }
-.header{
-    width: 100%;
-    height:200px;
+
+/* Profile Picture (Centered) */
+.profile-image {
+    position: absolute;
+    bottom: 0px; /* Reduced the value to move the profile picture up */
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: lightgray;
+    border: 5px solid white;
 }
 
-</style>
-{%endblock%}
-{% block content %}
-{% if header.itemimage %}
-      <img class="header" src="{{ header.itemimage.url }}" alt="Header" width = 100%>
-{% endif %}
-    <h3>{{ user.username }}'s Profile</h3>
-    <div class="profile-image">
-    {% if user_account %}
-        {% if user_account.avatar %}
-        <img src="{{ user_account.avatar.url }}" alt="Profile Picture" class="base-image">
-        {% else %}
-            <p>No profile picture uploaded.</p>
-        {% endif %}
-    {% endif %}
-    {% if border.itemimage %}
-    <img src="{{border.itemimage.url}}" alt="Border" class="base-image" >
-    {% endif %}
-    </div>
+.profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
+/* Items Grid Layout */
+.items-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px; /* Increase gap between items */
+    justify-items: center;
+    padding: 10px;
+}
+
+/* Adjust the grid layout for tablets */
+@media screen and (max-width: 768px) {
+    .items-container {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns for tablets */
+    }
+}
+
+/* Force 3 columns on mobile devices (max-width: 480px) */
+@media screen and (max-width: 480px) {
+    .items-container {
+        grid-template-columns: repeat(3, 1fr); /* 3 columns for mobile */
+    }
+}
+
+.item-card {
+    text-align: center;
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 8px;
+    background: #f9f9f9;
+    width: 100%;
+    max-width: 200px; /* Set a max-width for the cards to avoid stretching */
+    box-sizing: border-box; /* Ensure padding and borders don't overflow */
+    margin: 0 auto; /* Center the cards inside the grid cells */
+}
+
+.item-card img {
+    width: 100%;
+    border-radius: 5px;
+    height: auto; /* Ensure images scale properly */
+}
+
+.item-card button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+}
+
+.purchase-button { background: orange; }
+.equip-button { background: blue; }
+
+/* Add styles for purchased items */
+.purchased {
+    background: #d3d3d3; /* Greyed out background */
+    color: #888; /* Greyed-out text */
+    cursor: not-allowed; /* Disable the button */
+    pointer-events: none; /* Disable interaction with the button */
+    display: inline-block;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    width: 100%;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section with Centered Profile Image -->
+<div class="header-container">
+    {% if header.itemimage %}
+        <img class="header" src="{{ header.itemimage.url }}" alt="Header">
+    {% endif %}
+
+    <!-- Profile Image in the Center -->
+    <div class="profile-image">
+        {% if user_account and user_account.avatar %}
+            <img src="{{ user_account.avatar.url }}" alt="Profile Picture">
+        {% else %}
+            <p>No Profile Picture</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- User Info -->
+<div style="text-align: center; margin-top: 60px;">
+    <h3>{{ user.username }}'s Profile</h3>
     <p><strong>First Name:</strong> {{ user.first_name }}</p>
     <p><strong>Last Name:</strong> {{ user.last_name }}</p>
     <p><strong>Email:</strong> {{ user.email }}</p>
-
+    
     {% if user_account %}
         <p><strong>Points:</strong> {{ user_account.points }}</p>
         <p><strong>Bio:</strong> {{ user_account.bio }}</p>
-
     {% else %}
         <p><strong>Points:</strong> 0</p>
         <p><strong>Bio:</strong> No bio set.</p>
     {% endif %}
+</div>
 
-    <h2>🏆 Achievements</h2>
-    <div class="badges-container" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: flex-start; align-items: center;">
-        {% for user_badge in user.userbadge_set.all %}
-            <div class="badge" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 10px; width: auto; min-width: 100px;">
-                <img src="{{ user_badge.badge.icon.url }}" alt="{{ user_badge.badge.name }}" style="width: 80px; height: auto; border-radius: 10px;">
-                <p>{{ user_badge.badge.name }}</p>
-            </div>
-        {% empty %}
-            <p>No badges earned yet.</p>
-        {% endfor %}
-    </div>
-
-
-
-    <!-- Show Edit Profile button ONLY if the logged-in user is viewing their own profile -->
-    {% if user == request.user %}
-        <a href="{% url 'edit_profile_with_username' username=user.username %}"
-            style="display: inline-block; padding: 8px 12px; background: #008CBA; color: white; text-decoration: none; border-radius: 5px;">
-            Edit Profile
-        </a>
-        <p>You have {{ user_account.points }} points.</p>
-    <form method="post">
-        {% csrf_token %} <!-- Protects against CSRF attacks -->
-        <button type="submit" name="action" value="addpoints">I turned off a light</button>
-    </form>
-    <h1>Purchase Items</h1>
+{% if user == request.user %}
+    <!-- Purchase Items -->
+    <h2>Purchase Items</h2>
     <form method="post">
         {% csrf_token %}
-        {% for item in purchaseable %}
-        <tr>
-            <td>{{item.itemName}}</td>
-            <td>{{ item.itemCost}}</td>
-            <td>{{ items.itemimage.url}}</td>
-            <td>{{ item.itemslot}}</td>
-            <td><form method = "POST">
-                {% csrf_token %}
-                <button type="submit" name="action" value ="purchase {{item.itemName}}">Buy {{item.itemName }} {{item.itemslot }}</button>
-            </form></td>
+        <div class="items-container">
+            {% for item in purchaseable %}
+                <div class="item-card">
+                    <p><strong>{{ item.itemName }}</strong></p>
+                    <p>Cost: {{ item.itemCost }}</p>
+                    {% if item.itemimage %}
+                        <img src="{{ item.itemimage.url }}" alt="{{ item.itemName }}">
+                    {% endif %}
+                    {% if item in owned %}
+                        <!-- Display a purchased button instead of the buy button -->
+                        <div class="purchased">Purchased</div>
+                    {% else %}
+                        <button type="submit" name="action" value="purchase {{ item.itemName }}" class="purchase-button">Buy</button>
+                    {% endif %}
+                </div>
             {% endfor %}
-        </tr>
-
+        </div>
     </form>
-    <!--Equipping Items-->
-    <h1>Equip Cosmetics</h1>
+
+    <!-- Equip Items -->
+    <h2>Equip Cosmetics</h2>
     <form method="post">
         {% csrf_token %}
-        {% for item in owned %}
-            <table border="1">
-        <tr>
-            <td>{{item.itemName}}</td>
-            <td>{{ items.itemimage}}</td>
-            <td>{{ item.itemslot}}</td>
-            <td><form method = "POST">
-                {% csrf_token %}
-                <button type="submit" name="action" value ="equip {{item.itemName}}">Use {{item.itemName }} {{item.itemslot }}</button>
-            </form></td>
+        <div class="items-container">
+            {% for item in owned %}
+                <div class="item-card">
+                    <p><strong>{{ item.itemName }}</strong></p>
+                    {% if item.itemimage %}
+                        <img src="{{ item.itemimage.url }}" alt="{{ item.itemName }}">
+                    {% endif %}
+                    <button type="submit" name="action" value="equip {{ item.itemName }}" class="equip-button">Use</button>
+                </div>
             {% endfor %}
-        </tr>
-</table>
-    <a href="{% url 'home' %}">Home</a>
+        </div>
+    </form>
 
-    <br> <br>
-    <form method="GET" action="{% url 'search_users' %}">
+    <!-- Links & Actions -->
+    <br><br>
+    <form method="GET" action="{% url 'search_users' %}" style="text-align: center;">
         <input type="text" name="q" placeholder="Search for a user..." required>
         <button type="submit">Search</button>
     </form>
 
-    <br> <br>
+    <br><br>
 
-    <form method="POST" action="{% url 'download_data' %}">
+    <form method="POST" action="{% url 'download_data' %}" style="text-align: center;">
         {% csrf_token %}
         <button type="submit" style="background-color: blue; color: white;">Download Data</button>
     </form>
-    <form method="POST" action="{% url 'delete_account' %}">
+
+    <form method="POST" action="{% url 'delete_account' %}" style="text-align: center;">
         {% csrf_token %}
         <button type="submit" style="background-color: red; color: white;">Delete Account</button>
     </form>
-     {% endif %}
-
+{% endif %}
+</div>
 {% endblock %}
