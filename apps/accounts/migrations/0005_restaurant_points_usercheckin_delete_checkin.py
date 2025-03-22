@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                 'unique_together': {('account', 'restaurant', 'check_in_date')},
             },
         ),
-        migrations.DeleteModel(
-            name='CheckIn',
-        ),
+        #migrations.DeleteModel(
+           # name='CheckIn',
+        #),
     ]
