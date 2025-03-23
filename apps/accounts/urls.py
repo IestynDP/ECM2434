@@ -24,6 +24,5 @@ urlpatterns = [
     path("info/", views.info, name="info"),
     path('restaurants/<int:restaurant_id>/', views.restaurant_details, name='restaurant_details'),
     path('qr_scanner/', include('apps.qr_scanner.urls')),
-    path("check-in/<int:restaurant_id>/", views.check_in, name="check_in"),
 ]
 

@@ -324,12 +324,27 @@ def profile_view(request, username=None):
     })
     
 # Profile Searching
-@login_required
 def search_users(request):
-    query = request.GET.get("q")  # Get search input
-    users = User.objects.filter(username__icontains=query) if query else None  # Case-insensitive search
+    query = request.GET.get('q')
+    users = User.objects.filter(username__icontains=query)
 
-    return render(request, "accounts/search_results.html", {"users": users, "query": query})
+    # Create a dictionary to store the avatar URL for each user
+    user_avatars = {}
+
+    for user in users:
+        # Check if user has an avatar
+        avatar_url = user.account.avatar.url if user.account.avatar else None
+        user_avatars[user] = avatar_url
+
+    context = {
+        'users': users,
+        'user_avatars': user_avatars,  # Passing the user avatars to the template
+        'query': query,
+    }
+
+    return render(request, "accounts/search_results.html", context)
+
+
 
 # Editing Profiles
 @login_required

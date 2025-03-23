@@ -1,15 +1,145 @@
 {% extends "base.html" %}
+{% load custom_filters %}
 
 {% block content %}
-    <h2>Search Results</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <style>
+        /* Resetting margin and padding for consistent styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    {% if users %}
-        <ul>
+        /* Body styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 0px;
+        }
+
+        h2 {
+            margin: 10px;
+            text-align: center;
+        }
+
+        /* Container for user list */
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 90vh;
+            overflow-y: auto;
+            margin: 10px;
+            border: 3px solid #248179;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        /* Each user item styling */
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            background-color: white;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .user-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* User profile container */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            gap: 10px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Profile image styling */
+        .user-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Placeholder for when no profile picture is provided */
+        .user-image-placeholder {
+            width: 40px;
+            height: 40px;
+            background-color: #ddd;
+            border-radius: 50%;
+        }
+
+        /* Styling for the username */
+        .user-name {
+            font-size: 16px;
+            font-weight: bold;
+            flex: 1;
+        }
+
+        /* Make the list scrollable on mobile */
+        @media (max-width: 600px) {
+            .user-list {
+                max-height: 80vh;
+                padding: 10px;
+            }
+
+            .user-item {
+                padding: 8px;
+            }
+
+            .user-name {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+
+    <h2>Search Results</h2>
+    
+    <!-- Check if there are users -->
+    <div class="user-list">
+        {% if users %}
             {% for user in users %}
-                <li><a href="{% url 'profile_with_username' username=user.username %}">{{ user.username }}</a></li>
+                <div class="user-item">
+                    <a href="{% url 'profile_with_username' username=user.username %}" class="user-link" style="width: 100%; display: block;">
+                        <div class="user-profile">
+                            {% load custom_filters %}
+                            {% with user_avatar=user|get_avatar %}
+                                {% if user_avatar %}
+                                    <img src="{{ user_avatar }}" alt="{{ user.username }}'s profile picture" class="user-image">
+                                {% else %}
+                                    <div class="user-image-placeholder"></div>
+                                {% endif %}
+                            {% endwith %}
+                            <span class="user-name">{{ user.username }}</span>
+                        </div>
+                    </a>
+                </div>
             {% endfor %}
-        </ul>
-    {% else %}
-        <p>No users found matching "{{ query }}".</p>
-    {% endif %}
+        {% else %}
+            <p>No users found matching "{{ query }}".</p>
+        {% endif %}
+    </div>
+    
+
+</body>
+</html>
+
 {% endblock %}
