@@ -176,3 +176,5 @@ FIELD_ENCRYPTION_KEY = os.getenv("FIELD_ENCRYPTION_KEY", "Z54IzqixqPNTMAVH-C7K0F
 # #im leaving it here for now so the code actually works, i will replace it with something much more secure in a .env file 
 # when it comes to making an actual release version, otherwise it will not work 
 # (theres no point doing that now, and uploading to github, because then we have the same problem of it being public info)
+
+
