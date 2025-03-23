@@ -7,6 +7,10 @@ from datetime import date
 import json
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
+from apps.accounts.models import Badge, UserBadge
+from django.contrib import messages
+
+
 
 # QR Scan View (just renders the scanner page)
 def qr_scan_view(request):
@@ -55,6 +59,29 @@ def checkin_qrcode(request):
             account.total_points += restaurant.points
             account.save()
 
+            badge_messages = []
+
+            # Award Point Collector badge
+            if account.total_points >= 100:
+                collector_badge, _ = Badge.objects.get_or_create(
+                    name="Point Collector",
+                    defaults={"description": "Awarded for collecting 100 total points.",
+                              "icon": "badges/point_collector.png"}
+                )
+                if not UserBadge.objects.filter(user=request.user, badge=collector_badge).exists():
+                    UserBadge.objects.create(user=request.user, badge=collector_badge)
+                    badge_messages.append("You've earned the 'Point Collector' badge! ")
+
+            # Award Point Hoarder badge
+            if account.total_points >= 500:
+                hoarder_badge, _ = Badge.objects.get_or_create(
+                    name="Point Hoarder",
+                    defaults={"description": "Awarded for collecting 500 total points.",
+                              "icon": "badges/point_hoarder.png"}
+                )
+                if not UserBadge.objects.filter(user=request.user, badge=hoarder_badge).exists():
+                    UserBadge.objects.create(user=request.user, badge=hoarder_badge)
+                    badge_messages.append("You've earned the 'Point Hoarder' badge! ")
 
             # Record the check-in
             UserCheckIn.objects.create(
@@ -67,7 +94,8 @@ def checkin_qrcode(request):
                 'already_scanned': False,
                 'restaurant_name': restaurant.name,
                 'points': restaurant.points,
-                'total_points': account.points  # Changed to account
+                'total_points': account.points,  # Changed to account
+                'badges': badge_messages
             })
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)

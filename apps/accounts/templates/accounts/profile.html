@@ -149,6 +149,7 @@ main {
 {% endblock %}
 
 {% block content %}
+
 <div class="header-container">
     {% if header %}
         <img class="header" src="{{ header.itemimage.url }}" alt="Header">
@@ -246,7 +247,9 @@ main {
         {% csrf_token %}
         <button type="submit" style="background-color: red; color: white;">Delete Account</button>
     </form>
+
 {% endif %}
+
 
 <script>
     {% if success %}
