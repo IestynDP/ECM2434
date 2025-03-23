@@ -14,7 +14,7 @@
         <tr>
             <td>{{item.itemName}}</td>
             <td>{{ item.itemCost}}</td>
-            <td>{{ items.itemimage.url}}</td>
+            <td><img src="{{item.itemimage.url}}" alt="Item Image" width="100"></td>
             <td>{{ item.itemslot}}</td>
             <td><form method = "POST">
                 {% csrf_token %}
