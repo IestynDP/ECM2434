@@ -25,6 +25,5 @@ urlpatterns = [
     path('restaurants/<int:restaurant_id>/', views.restaurant_details, name='restaurant_details'),
     path('qr_scanner/', include('apps.qr_scanner.urls')),
     path("profile-redirect/", views.profile_redirect, name="profile_redirect"),
-    path("check-in/<int:restaurant_id>/", views.check_in, name="check_in"),
 ]
 

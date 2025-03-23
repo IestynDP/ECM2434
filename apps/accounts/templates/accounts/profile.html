@@ -1,142 +1,260 @@
 {% extends "base.html" %}
+
 {% block extra_css %}
 <style>
-.profile-image{
-    position:relative;
-    width: 200px;
-    height:200px;
-    overflow: hidden;
-    background-color: lightgray;
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow-x: hidden;
 }
-.base-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 200px;
+
+main {
+    text-align: center;
+}
+
+.header-container {
+    position: relative;
+    width: 100%;
     height: 200px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
 }
-.header{
-    width: 100%;
-    height:200px;
+
+.profile-image {
+    position: absolute;
+    bottom: 0;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 5px solid black;
+    
 }
 
-</style>
-{%endblock%}
-{% block content %}
-{% if header.itemimage %}
-    <img class="header" src="{{ header.itemimage.url }}" alt="Header" width = 100%>
-{% endif %}
-    <h3>{{ user.username }}'s Profile</h3>
-    <div class="profile-image">
-    {% if user_account %}
-        {% if user_account.avatar %}
-        <img src="{{ user_account.avatar.url }}" alt="Profile Picture" class="base-image">
-        {% else %}
-            <p>No profile picture uploaded.</p>
-        {% endif %}
-    {% endif %}
-    {% if border.itemimage %}
-    <img src="{{border.itemimage.url}}" alt="Border" class="base-image" >
-    {% endif %}
-    </div>
+.profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
+.equipped-items {
+    position: absolute;
+    bottom: -10px; /* Adjust the bottom position if needed */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+    overflow: visible;
+    z-index: 1; /* Ensure the items are placed above the profile image */
+}
+
+.equipped-items img {
+    height: 60px; /* Adjust size as needed */
+    position: relative;
+    overflow: visible;
+    top: -130px; /* Adjust this to move the item up or down to fit better */
+}
+
+.items-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    justify-items: center;
+    padding: 10px;
+}
+
+.item-card {
+    text-align: center;
+    border: 1px solid #ddd;
+    padding: 8px;
+    border-radius: 8px;
+    background: #fff;
+    width: 100%;
+    max-width: 120px;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.item-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+.item-card button {
+    margin-top: 6px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    font-size: 12px;
+}
+
+.purchase-button { background: orange; }
+.equip-button { background: blue; }
+.purchased {
+    background: #d3d3d3;
+    color: #888;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.disabled-button {
+    background: #d3d3d3;
+    color: #888;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.badges-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 10px;
+    justify-items: center;
+    padding: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.badge img {
+    width: 60px;
+    height: auto;
+    border-radius: 8px;
+}
+
+@media screen and (max-width: 480px) {
+    .item-card {
+        max-width: 100px;
+        padding: 6px;
+    }
+    .badges-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .item-card button {
+        font-size: 10px;
+        padding: 5px 8px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="header-container">
+    {% if header %}
+        <img class="header" src="{{ header.itemimage.url }}" alt="Header">
+    {% endif %}
+
+    <div class="profile-image">
+        {% if user_account and user_account.avatar %}
+            <img src="{{ user_account.avatar.url }}" alt="Profile Picture">
+        {% else %}
+            <p>No Profile Picture</p>
+        {% endif %}
+    </div>
+    <div class="equipped-items">
+        {% if header %}
+            <img src="{{ header.itemimage.url }}" alt="Header Item" class="header-item">
+        {% endif %}
+        {% if border %}
+            <img src="{{ border.itemimage.url }}" alt="Border Item" class="border-item">
+        {% endif %}
+        {% for item in equipped_items %}
+            <img src="{{ item.item.itemimage.url }}" alt="{{ item.item.itemName }}">
+        {% endfor %}
+        
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 60px;">
+    <h3>{{ user.username }}'s Profile</h3>
     <p><strong>First Name:</strong> {{ user.first_name }}</p>
     <p><strong>Last Name:</strong> {{ user.last_name }}</p>
     <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Points:</strong> {{ user_account.points|default:"0" }}</p>
+    <p><strong>Bio:</strong> {{ user_account.bio|default:"No bio set." }}</p>
+</div>
 
-    {% if user_account %}
-        <p><strong>Points:</strong> {{ user_account.points }}</p>
-        <p><strong>Bio:</strong> {{ user_account.bio }}</p>
+<h2>🏆 Badges</h2>
+<div class="badges-container">
+    {% for user_badge in user.userbadge_set.all %}
+        <div class="badge">
+            <img src="{{ user_badge.badge.icon.url }}" alt="{{ user_badge.badge.name }}">
+            <p>{{ user_badge.badge.name }}</p>
+        </div>
+    {% empty %}
+        <p>No badges earned yet.</p>
+    {% endfor %}
+</div>
 
-    {% else %}
-        <p><strong>Points:</strong> 0</p>
-        <p><strong>Bio:</strong> No bio set.</p>
-    {% endif %}
-
-    <h2>🏆 Achievements</h2>
-    <div class="badges-container" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: flex-start; align-items: center;">
-        {% for user_badge in user.userbadge_set.all %}
-            <div class="badge" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 10px; width: auto; min-width: 100px;">
-                <img src="{{ user_badge.badge.icon.url }}" alt="{{ user_badge.badge.name }}" style="width: 80px; height: auto; border-radius: 10px;">
-                <p>{{ user_badge.badge.name }}</p>
+{% if user == request.user %}
+    <h2>Purchase Items</h2>
+    <div class="items-container">
+        {% for item in purchaseable %}
+            <div class="item-card">
+                <img src="{{ item.itemimage.url }}" alt="Item Image">
+                <h4>{{ item.itemName }}</h4>
+                <p>Cost: {{ item.itemCost }}</p>
+                <p>Slot: {{ item.itemslot }}</p>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="item_name" value="{{ item.itemName }}">
+                    <button type="submit" class="purchase-button" name="action" value="purchase {{ item.itemName }}">Buy</button>
+                </form>
             </div>
-        {% empty %}
-            <p>No badges earned yet.</p>
         {% endfor %}
     </div>
 
-
-
-    <!-- Show Edit Profile button ONLY if the logged-in user is viewing their own profile -->
-    {% if user == request.user %}
-        <a href="{% url 'edit_profile_with_username' username=user.username %}"
-            style="display: inline-block; padding: 8px 12px; background: #008CBA; color: white; text-decoration: none; border-radius: 5px;">
-            Edit Profile
-        </a>
-        <p>You have {{ user_account.points }} points.</p>
-    <form method="post">
-        {% csrf_token %} <!-- Protects against CSRF attacks -->
-        <button type="submit" name="action" value="addpoints">I turned off a light</button>
-    </form>
-    <h1>Purchase Items</h1>
-    <form method="post">
-        {% csrf_token %}
-        {% for item in purchaseable %}
-        <tr border="1">
-            <td>{{item.itemName}}</td>
-            <td>{{ item.itemCost}}</td>
-            <td><img src="{{item.itemimage.url}}" alt="Item Image" width="100"></td>
-            <td>{{ item.itemslot}}</td>
-            <td><form method = "POST">
-                {% csrf_token %}
-                <button type="submit" name="action" value ="purchase {{item.itemName}}">Buy {{item.itemName }} {{item.itemslot }}</button>
-            </form></td>
-            {% endfor %}
-        </tr>
-
-    </form>
-    <!--Equipping Items-->
-    <h1>Equip Cosmetics</h1>
-        <table border="1">
-    <form method="post">
-        {% csrf_token %}
-    <tr>
-            <th>Item Name</th>
-            <th>Item</th>
-            <th>Slot</th>
-            <th>Equip</th>
-        </tr>
+    <h2>Equip Cosmetics</h2>
+    <div class="items-container">
         {% for item in owned %}
-            <tr>
-            <td>{{item.itemName}}</td>
-            <td><img src="{{item.itemimage.url}}" alt="Item Image" width="100"></td>
-            <td>{{ item.itemslot}}</td>
-            <td><form method = "POST">
-                {% csrf_token %}
-                <button type="submit" name="action" value ="equip {{item.itemName}}">Use {{item.itemName }} {{item.itemslot }}</button>
-            </form></td>
+            <div class="item-card">
+                <img src="{{ item.itemimage.url }}" alt="Item Image">
+                <h4>{{ item.itemName }}</h4>
+                <p>Slot: {{ item.itemslot }}</p>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="item_name" value="{{ item.itemName }}">
+                    <button type="submit" class="equip-button" name="action" value="equip {{ item.itemName }}">Use</button>
+                </form>               
+            </div>
         {% endfor %}
-        </tr>
-</table>
-    <a href="{% url 'home' %}">Home</a>
+    </div>
 
-    <br> <br>
-    <form method="GET" action="{% url 'search_users' %}">
+    <br><br>
+    <form method="GET" action="{% url 'search_users' %}" style="text-align: center;">
         <input type="text" name="q" placeholder="Search for a user..." required>
         <button type="submit">Search</button>
     </form>
 
-    <br> <br>
-
-    <form method="POST" action="{% url 'download_data' %}">
+    <br><br>
+    <form method="POST" action="{% url 'download_data' %}" style="text-align: center;">
         {% csrf_token %}
         <button type="submit" style="background-color: blue; color: white;">Download Data</button>
     </form>
-    <form method="POST" action="{% url 'delete_account' %}">
+
+    <form method="POST" action="{% url 'delete_account' %}" style="text-align: center;">
         {% csrf_token %}
         <button type="submit" style="background-color: red; color: white;">Delete Account</button>
     </form>
-    {% endif %}
 
+{% endif %}
+
+
+<script>
+    {% if success %}
+        // Reload the page after the item is successfully equipped
+        window.location.reload();
+    {% endif %}
+</script>
 {% endblock %}

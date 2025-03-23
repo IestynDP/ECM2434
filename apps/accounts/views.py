@@ -22,6 +22,9 @@ import os
 from django.http import JsonResponse
 from apps.accounts.models import Restaurant
 from django.utils import timezone
+from django.db import transaction
+import logging
+
 
 # we can use this for a wide variety of things that we only want admins to be able to do
 def is_admin(user):
@@ -156,103 +159,136 @@ def logout_view(request):
     logout(request)
     return redirect("login")
 
-# Profile View
+
+
+
+
+from django.db import transaction
+
 @login_required
 def profile_view(request, username=None):
     if username is None:
-        # Redirect to the logged-in user's profile page
         return redirect('profile_with_username', username=request.user.username)
-    user = get_object_or_404(User, username=username)  # Fetch user by username
-    user_account, created = account.objects.get_or_create(user=user)  # Ensure account exists
-    # setting up the querysets of dbs relating to the user
+
+    user = get_object_or_404(User, username=username)
+    user_account, created = account.objects.get_or_create(user=user)
+
     try:
-        purchased_items = items.objects.filter(purchases__user__user=user).distinct()#getting the purchased items as a list
-        not_purchased_items = items.objects.exclude(purchases__user__user=user)#getting not purchased items
-        try:
-            equipped = purchases.objects.filter(equipState=True, user__user=user)
-            for x in equipped:
-                if x.item.itemslot == "header":
-                    headerslot = x.item
-                if x.item.itemslot == "border":
-                    borderslot = x.item
-                print(x.item.itemName)
-        except items.DoesNotExist:  # handles unexpected errors such as an item not existing
-            pass
-        #checking if any items are equipped, setting to blank if not
-        try:
-            borderslot
-        except:
-            borderslot = ""
-        try:
-            headerslot
-        except:
-            headerslot=""
+        purchased_items = items.objects.filter(purchases__user__user=user).distinct()
+        not_purchased_items = items.objects.exclude(purchases__user__user=user)
+        equipped_items = purchases.objects.filter(user__user=user, equipState=True)
+
+        header = None
+        border = None
+
+        for item in equipped_items:
+            if item.item.itemslot == "header":
+                header = item.item
+            if item.item.itemslot == "border":
+                border = item.item
+
     except account.DoesNotExist:
-        user_account = None  # If no account exists, handle gracefully
-    # Check if the button was clicked
+        user_account = None
+
+    success = False  # Flag to track if an item was equipped successfully
+
     if request.method == "POST":
         action = request.POST.get("action")
-        # for handling points for demonstrative purposes - will be removed once actual point gains are added
+
         if action == "addpoints":
-            user_account.points += 5  # Increase points by 5
+            user_account.points += 5
             user_account.save()
+
         else:
             action_request = action.split(" ")
-            if action_request[0] == "purchase":  # purchasing an item
+
+            if len(action_request) < 2:
+                return redirect("profile_redirect")
+
+            if action_request[0] == "purchase":
                 try:
-                    purchaseitem = items.objects.get(itemName=action_request[1])  # item reference
-                    # checking if the user has enough points to buy the item
+                    purchaseitem = items.objects.get(itemName=action_request[1])
                     if purchaseitem.itemCost > user_account.points:
-                        print("not enough points")
-                        pass
-                    # if they do, proceed
-                    if purchaseitem.itemCost <= user_account.points:
-                        if not purchases.objects.filter(item=purchaseitem,user__user=user).exists():  # checking they have not already bought the item
-                            try:
-                                user = user_account
-                                item = purchaseitem
-                                purchases.objects.create(user=user, item=item, equipState=0)
-                                user_account.points -= purchaseitem.itemCost
-                                user_account.save()
-                            except:  # handles unexpected failures
-                                print("All items in DB:", items.objects.values_list("itemName", flat=True))
-                                print("could not create purchase value")
-                                pass
-                    else:
-                        print("item already owned")
-                except items.DoesNotExist:  # if for whatever reason there isn't a corresponding item
-                    print("no item found")
+                        pass  # Not enough points
+                    elif purchaseitem.itemCost <= user_account.points:
+                        if not purchases.objects.filter(item=purchaseitem, user__user=user).exists():
+                            purchases.objects.create(user=user_account, item=purchaseitem, equipState=False)
+                            user_account.points -= purchaseitem.itemCost
+                            user_account.save()
+                except items.DoesNotExist:
+                    pass  # If no corresponding item found
+
+            if action_request[0] == "equip":
+                try:
+                    equipitem = items.objects.get(itemName=action_request[1])
+
+                    # Ensure the user has purchased the item
+                    purchase_record = purchases.objects.filter(item=equipitem, user=user_account).first()
+
+                    if purchase_record:  # Item found in user's purchased items
+                        with transaction.atomic():  # Ensures all changes are made as a single transaction
+                            if not purchase_record.equipState:
+                                purchases.objects.filter(
+                                    user=user_account,
+                                    item__itemslot=equipitem.itemslot,
+                                    equipState=True
+                                ).update(equipState=False)  # Disable other items in the same slot
+
+                                # Step 2: Equip the selected item (equipState=True)
+                                purchase_record.equipState = True
+                                purchase_record.save()
+                                
+                                # Set success flag to True
+                                success = True
+                except items.DoesNotExist:
                     pass
-        if action_request[0] == "equip":  # Equipping items
-            try:
-                equipitem = items.objects.get(itemName=action_request[1])
-                if purchases.objects.filter(item=equipitem,user=user_account).exists():
-                    purchases.objects.filter(user=user_account,item__itemslot=equipitem.itemslot).exclude(item=equipitem).update(equipState=False)
-                    toequip = purchases.objects.filter(item=equipitem).first()  # Get the first instance safely
-                    current_equipState = toequip.equipState
-                    toequip.equipState = not current_equipState
-                    toequip.save()
-            except items.DoesNotExist:  # if for whatever reason there isn't a corresponding item
-                print("no cosmetic owned")
-            print("b",borderslot,"h",headerslot)
-        return redirect("profile_redirect")
-    print("b", borderslot, "h", headerslot)
+
     return render(request, "accounts/profile.html", {
         "user": user,
         "user_account": user_account,
-        "border":borderslot,
-        "header":headerslot,
-        "owned":purchased_items,
-        "purchaseable":not_purchased_items
+        "header": header,
+        "border": border,
+        "owned": purchased_items,
+        "purchaseable": not_purchased_items,
+        "equipped_items": equipped_items,
+        "success": success  # Pass success flag to template
     })
+
+
+
+
+
+
+
+
+
+
+
+
+
     
 # Profile Searching
-@login_required
 def search_users(request):
-    query = request.GET.get("q")  # Get search input
-    users = User.objects.filter(username__icontains=query) if query else None  # Case-insensitive search
+    query = request.GET.get('q')
+    users = User.objects.filter(username__icontains=query)
 
-    return render(request, "accounts/search_results.html", {"users": users, "query": query})
+    # Create a dictionary to store the avatar URL for each user
+    user_avatars = {}
+
+    for user in users:
+        # Check if user has an avatar
+        avatar_url = user.account.avatar.url if user.account.avatar else None
+        user_avatars[user] = avatar_url
+
+    context = {
+        'users': users,
+        'user_avatars': user_avatars,  # Passing the user avatars to the template
+        'query': query,
+    }
+
+    return render(request, "accounts/search_results.html", context)
+
+
 
 # Editing Profiles
 @login_required
@@ -420,3 +456,4 @@ def check_in(request, restaurant_id):
     UserCheckIn.objects.create(user=request.user, restaurant=restaurant, scan_date=timezone.now().date())
 
     return HttpResponse(f"Checked in successfully at {restaurant.name}!", status=200)
+

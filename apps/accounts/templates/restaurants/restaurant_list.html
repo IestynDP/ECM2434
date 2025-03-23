@@ -87,7 +87,8 @@
 
         .modal-content {
             background: white;
-            padding: 20px;
+            padding-top: 20px;
+            padding-bottom: 20px;
             border-radius: 10px;
             width: 80%;
             max-width: 400px;
@@ -98,6 +99,13 @@
             float: right;
             font-size: 20px;
         }
+
+        #modal-qr-container {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        
     </style>
 </head>
 <main>
@@ -111,7 +119,7 @@
     <div class="restaurant-container">
         {% for restaurant in restaurants %}
             <div class="restaurant-box" onclick="openModal('{{ restaurant.id }}')">
-                <img src="{% static 'restaurant-icon.png' %}" alt="Restaurant">
+                <img src="{% static 'homepageicons/restaurant-icon.png' %}" alt="Restaurant">
                 <div>{{ restaurant.name }}</div>
             </div>
         {% empty %}
@@ -131,7 +139,7 @@
         
         <!-- QR Code only visible if staff -->
         <div id="modal-qr-container" style="display:none;">
-            <p><strong>QR Code:</strong></p>
+            <p><strong>QR Code:</strong></p><br>
             <img id="modal-qr" src="" alt="QR Code">
         </div>
 
@@ -173,7 +181,7 @@ function openModal(restaurantId) {
             // Handle QR code for staff
             if (data.qr_base64) {
                 document.getElementById('modal-qr').src = `data:image/png;base64,${data.qr_base64}`;
-                document.getElementById('modal-qr-container').style.display = 'block';  // Show the QR code section
+                document.getElementById('modal-qr-container').style.display = 'inline-block';  // Show the QR code section
             } else {
                 document.getElementById('modal-qr-container').style.display = 'none';  // Hide QR code section if not available
             }

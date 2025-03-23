@@ -12,6 +12,13 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    # your other url patterns
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -169,3 +176,5 @@ FIELD_ENCRYPTION_KEY = os.getenv("FIELD_ENCRYPTION_KEY", "Z54IzqixqPNTMAVH-C7K0F
 # #im leaving it here for now so the code actually works, i will replace it with something much more secure in a .env file 
 # when it comes to making an actual release version, otherwise it will not work 
 # (theres no point doing that now, and uploading to github, because then we have the same problem of it being public info)
+
+
