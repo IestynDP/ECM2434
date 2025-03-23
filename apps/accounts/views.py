@@ -95,7 +95,7 @@ def manage_items(request):
 @login_required
 def leaderboard(request):
     # top 10 users sorted by points in descending order
-    top_players = account.objects.order_by('-points')[:10]
+    top_players = account.objects.order_by('-total_points')[:10]
     return render(request, "leaderboard.html", {"top_players": top_players})
 
 
