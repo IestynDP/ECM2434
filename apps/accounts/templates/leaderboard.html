@@ -90,7 +90,7 @@
                 {% for player in top_players %}
                 <tr class="{% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% endif %}">
                     <td>#{{ forloop.counter }}</td>
-                    <td>{{ player.user.username }}</td>
+                    <td><a href="{% url 'profile_with_username' username=player.user.username %}">{{ player.user.username }}</a></td>
                     <td>{{ player.total_points }}</td>
                 </tr>
                 {% empty %}
