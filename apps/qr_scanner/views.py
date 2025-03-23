@@ -66,7 +66,7 @@ def checkin_qrcode(request):
                 collector_badge, _ = Badge.objects.get_or_create(
                     name="Point Collector",
                     defaults={"description": "Awarded for collecting 100 total points.",
-                              "icon": "badges/point_collector.png"}
+                            "icon": "badges/point_collector.png"}
                 )
                 if not UserBadge.objects.filter(user=request.user, badge=collector_badge).exists():
                     UserBadge.objects.create(user=request.user, badge=collector_badge)
@@ -77,7 +77,7 @@ def checkin_qrcode(request):
                 hoarder_badge, _ = Badge.objects.get_or_create(
                     name="Point Hoarder",
                     defaults={"description": "Awarded for collecting 500 total points.",
-                              "icon": "badges/point_hoarder.png"}
+                            "icon": "badges/point_hoarder.png"}
                 )
                 if not UserBadge.objects.filter(user=request.user, badge=hoarder_badge).exists():
                     UserBadge.objects.create(user=request.user, badge=hoarder_badge)
@@ -101,5 +101,3 @@ def checkin_qrcode(request):
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
     else:
         return JsonResponse({'success': False, 'message': 'Invalid request method. Please send a POST request.'}, status=400)
-
-

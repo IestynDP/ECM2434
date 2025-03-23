@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from .models import Category, Question, Answer, UserQuizScore
 from django.http import HttpRequest, HttpResponse
 from django.contrib.auth.decorators import login_required
-from apps.accounts.models import account, UserBadge, Badge  # Updated path
+from apps.accounts.models import account, UserBadge, Badge 
 from django.contrib import messages
 from django.contrib.messages import get_messages
 
@@ -67,6 +67,8 @@ def submit_quiz(request, category_id):
             user_account.points += additional_points
             user_account.total_points += additional_points
             user_account.save()
+            user_quiz_score.highest_score = score
+            user_quiz_score.save()
             # give Point Collector badge if user's lifetime points reach 100
             if user_account.total_points >= 100:
                 collector_badge, created = Badge.objects.get_or_create(name="Point Collector", defaults={
@@ -86,8 +88,7 @@ def submit_quiz(request, category_id):
                     UserBadge.objects.create(user=request.user, badge=hoarder_badge)
                     messages.success(request, "You've earned the 'Point Hoarder' badge!")
 
-            user_quiz_score.highest_score = score
-            user_quiz_score.save()
+
 
 
 
