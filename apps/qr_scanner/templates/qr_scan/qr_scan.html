@@ -245,8 +245,13 @@
                         if (data.success) {
                             if (data.already_scanned) {
                                 showModal('errorModal', "You have already checked in today.");
-                            } else {
-                                showModal('successModal', `You've successfully checked into ${data.restaurant_name} and earned ${data.points} points! Total points: ${data.total_points}`);
+                            } else{
+                                let message = `You've successfully checked into ${data.restaurant_name} and earned ${data.points} points! Total points: ${data.total_points}`;
+
+                                if (data.badges && data.badges.length > 0) {
+                                    message += "<br><br>" + data.badges.join("<br>");
+                                }
+                                showModal('successModal', message);
                             }
                         } else {
                             showModal('errorModal', data.message || "An error occurred.");
