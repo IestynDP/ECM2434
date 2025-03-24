@@ -14,48 +14,54 @@ services:
       - static_volume:/app/staticfiles # Static files volume
       - media_volume:/app/media # Media files volume
     environment:
-      - DJANGO_SETTINGS_MODULE=config.settings
-      - DEBUG=0
-      - ALLOWED_HOSTS=*
-      - PYTHONUNBUFFERED=1 # Add this for better logging
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
+      - DEBUG=${DEBUG}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
     ports:
       - 8000:8000
     networks:
       - webnet
 
-  # Nginx Service
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
+  # Caddy Service
+  caddy:
+    image: caddy:latest
+    container_name: caddy
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ../../webhosting/containers/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../../webhosting/containers/caddy/Caddyfile:/etc/caddy/Caddyfile
       - static_volume:/app/staticfiles:ro
       - media_volume:/app/media:ro
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       - web
     networks:
       - webnet
+    environment:
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
 
   # Cloudflared Tunnel
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
     restart: unless-stopped
-    command: tunnel --no-autoupdate run --url http://django_app:8000 --token ${TUNNEL_TOKEN}
+    command: tunnel --no-autoupdate run --url https://caddy:443 --token ${TUNNEL_TOKEN}
     environment:
       - TUNNEL_TOKEN=${TUNNEL_TOKEN}
     networks:
       - webnet
     depends_on:
-      - nginx
+      - caddy
 
 volumes:
   static_volume:
   media_volume:
+  caddy_data:
+  caddy_config:
 
 networks:
   webnet:
