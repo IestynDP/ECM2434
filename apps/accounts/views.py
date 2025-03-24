@@ -34,6 +34,7 @@ def privacy_policy(request):
     return render(request, "accounts/privacy_policy.html", {"user": request.user})
 
 @login_required # Only logged in users can see the home page
+# sustainability fact for homepage
 def home(request):
     fun_facts = [
         "Recycling one ton of paper saves 17 trees! 🌳",
@@ -102,6 +103,7 @@ def leaderboard(request):
     return render(request, "leaderboard.html", {"top_players": top_players})
 
 
+# Articles with info for the info page
 def info(request):
     articles = [
         {

@@ -12,7 +12,7 @@ import base64
 # Create your models here.
 class account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    points = models.IntegerField(default=0)
+    points = models.IntegerField(default=0) # Current points
     total_points = models.IntegerField(default=0)  # Total lifetime points
     bio = models.TextField(blank=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
@@ -40,7 +40,7 @@ class purchases(models.Model):
     #tasks
 
 
-
+# Allows adding restaurants
 class Restaurant(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)  # Business owner
     name = models.CharField(max_length=255, unique=True)
@@ -78,7 +78,7 @@ def generate_unique_qr_code():
 
     return qr_code
 
-
+# Stores Badges
 class Badge(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField()
@@ -87,6 +87,7 @@ class Badge(models.Model):
     def __str__(self):
         return self.name
 
+# Tracks the badges a user has earnt
 class UserBadge(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
@@ -95,7 +96,7 @@ class UserBadge(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.badge.name}"
     
-
+# Tracks restaurant check in and ensure max 1 check-in per day
 class UserCheckIn(models.Model):
     account = models.ForeignKey(account, on_delete=models.CASCADE)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
