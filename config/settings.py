@@ -38,7 +38,8 @@ ALLOWED_HOSTS = ["10.207.129.237",
                  "10.10.0.56",
                  "10.207.159.148",
                  "localhost",
-                 "ecm2434b.pixel-87.uk",]
+                 "ecm2434b.pixel-87.uk",
+                 "10.207.103.16",]
 
 CSRF_TRUSTED_ORIGINS = ['https://ecm2434b.pixel-87.uk']
 
