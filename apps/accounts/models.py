@@ -47,7 +47,7 @@ class Restaurant(models.Model):
     description = models.TextField()
     location = models.CharField(max_length=255)
     sustainability_features = models.TextField()
-    verified = models.BooleanField(default=False)  # Will be used for verification later
+    verified = models.BooleanField(default=False)
     qrCodeID = models.CharField(max_length=16, unique=True, default=generate_unique_qr_code)
     points = models.IntegerField(default=10)  # Points for checking in
 
@@ -70,7 +70,7 @@ def generate_unique_qr_code():
     # Check if the table exists before querying the database
     with connection.cursor() as cursor:
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='accounts_restaurant';")
-        table_exists = cursor.fetchone() is not None  # True if the table exists
+        table_exists = cursor.fetchone() is not None
 
     if table_exists:
         while Restaurant.objects.filter(qrCodeID=qr_code).exists():
