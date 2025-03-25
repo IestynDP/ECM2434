@@ -1,29 +1,46 @@
-from django.http import JsonResponse
+from typing import Dict, Any
+from django.http import JsonResponse, HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-from apps.accounts.models import Restaurant, UserCheckIn, account
-from django.views.decorators.csrf import csrf_exempt
-from datetime import date
-import json
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
-from apps.accounts.models import Badge, UserBadge
 from django.contrib import messages
+from datetime import date
+import json
+from apps.accounts.models import (
+    Restaurant,
+    UserCheckIn,
+    account,
+    Badge,
+    UserBadge,
+)
 
-
-
-# QR Scan View (renders the scanner page)
-def qr_scan_view(request):
+def qr_scan_view(request: HttpRequest) -> HttpResponse:
+    """Render the QR code scanner page."""
     return render(request, 'qr_scan/qr_scan.html')
 
-# Scan QR
-def scan_qr(request):
+def scan_qr(request: HttpRequest) -> HttpResponse:
+    """Render the QR scanner interface."""
     return render(request, 'qr_scan/qr_scan.html')
 
-# This view handles the QR code check-in logic
 @login_required
 @csrf_exempt
-def checkin_qrcode(request):
+def checkin_qrcode(request: HttpRequest) -> JsonResponse:
+    """
+    Handle QR code check-in logic.
+
+    Process a QR code scan, verify the restaurant, and award points and badges
+    if appropriate. Prevents multiple check-ins on the same day.
+
+    Args:
+        request: The HTTP request object containing the QR code data
+
+    Returns:
+        JsonResponse: Response containing success status, points awarded, and any earned badges
+    
+    Raises:
+        JsonResponse: With error message if request is invalid or processing fails
+    """
     if request.method == 'POST':
         try:
             # Parse the incoming JSON body
