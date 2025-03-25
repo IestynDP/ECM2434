@@ -5,26 +5,36 @@ from django.contrib.auth.decorators import login_required
 from apps.accounts.models import account, UserBadge, Badge 
 from django.contrib import messages
 from django.contrib.messages import get_messages
-
-
-
-
+from typing import Union
 
 def home(request: HttpRequest) -> HttpResponse:
-    """Renders the quiz home page, listing all quiz categories"""
+    """Render the quiz home page."""
     categories = Category.objects.all()
     return render(request, 'quiz_home.html', {'categories': categories})
 
 @login_required
-def quiz(request, category_id):
+def quiz(request: HttpRequest, category_id: int) -> HttpResponse:
+    """Display quiz questions for a specific category."""
     category = Category.objects.get(id=category_id)
     questions = Question.objects.filter(category=category)
     return render(request, 'quiz.html',
                 {'category': category, 'questions': questions})
 
-
 @login_required
-def submit_quiz(request, category_id):
+def submit_quiz(request: HttpRequest, category_id: int) -> HttpResponse:
+    """
+    Handle quiz submission and scoring.
+
+    Process submitted answers, calculate score, award points and badges
+    based on performance.
+
+    Args:
+        request: The HTTP request object
+        category_id: ID of the quiz category
+
+    Returns:
+        HttpResponse: Rendered results template with score and rank
+    """
     if request.method == 'POST':
         correct_answers = 0
         total_questions = 0
@@ -87,10 +97,6 @@ def submit_quiz(request, category_id):
                 if not UserBadge.objects.filter(user=request.user, badge=hoarder_badge).exists():
                     UserBadge.objects.create(user=request.user, badge=hoarder_badge)
                     messages.success(request, "You've earned the 'Point Hoarder' badge!")
-
-
-
-
 
         # Award "Quiz Master" Badge if score is 100%
         if score == 100:

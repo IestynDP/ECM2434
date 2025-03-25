@@ -173,9 +173,9 @@ DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 FIELD_ENCRYPTION_KEY = os.getenv("FIELD_ENCRYPTION_KEY", "Z54IzqixqPNTMAVH-C7K0F8kocf_B_9OeSduMQoC1K0=") 
 # this is the hashing key. 
-# #yes i know its hard coded, and yes i know its public on github. 
-# #im leaving it here for now so the code actually works, i will replace it with something much more secure in a .env file 
+# #yes I know its hard coded, and yes I know its public on GitHub.
+# #im leaving it here for now so the code actually works, I will replace it with something much more secure in a .env file
 # when it comes to making an actual release version, otherwise it will not work 
-# (theres no point doing that now, and uploading to github, because then we have the same problem of it being public info)
+# (there's no point doing that now, and uploading to GitHub, because then we have the same problem of it being public info)
 
 
