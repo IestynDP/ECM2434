@@ -257,18 +257,6 @@ def profile_view(request, username=None):
     })
 
 
-
-
-
-
-
-
-
-
-
-
-
-    
 # Profile Searching
 def search_users(request):
     query = request.GET.get('q')
@@ -436,4 +424,3 @@ def check_in(request, restaurant_id):
     UserCheckIn.objects.create(user=request.user, restaurant=restaurant, scan_date=timezone.now().date())
 
     return HttpResponse(f"Checked in successfully at {restaurant.name}!", status=200)
-
