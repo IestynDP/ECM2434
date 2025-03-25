@@ -352,10 +352,6 @@ def download_data(request):
     return JsonResponse(data, json_dumps_params={"indent": 2})
 
 
-# ALL RESTAURANT CODE GOES BETWEEN HERE
-
-
-
 def generate_unique_qr_code():
     # Generate a unique 16-character alphanumeric QR Code, only querying the DB after migration
     qr_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
@@ -406,23 +402,7 @@ def restaurant_list(request):
 
     return render(request, "restaurants/restaurant_list.html", {"restaurants": restaurants})
 
-def restaurant_details(request, restaurant_id):
-    try:
-        restaurant = Restaurant.objects.get(id=restaurant_id)
 
-        data = {
-            'id': restaurant.id,
-            'name': restaurant.name,
-            'description': restaurant.description,
-            'location': restaurant.location,
-            'sustainability_features': restaurant.sustainability_features,
-            'qr_base64': restaurant.qr_code_base64()  # This will now work
-        }
-
-        return JsonResponse(data)
-
-    except Restaurant.DoesNotExist:
-        return JsonResponse({'error': 'Restaurant not found'}, status=404)
 
 
 
@@ -442,8 +422,6 @@ def restaurant_details(request, restaurant_id):
     except Restaurant.DoesNotExist:
         return JsonResponse({'error': 'Restaurant not found'}, status=404)
 
-
-# AND HERE (just for organisation purposes ty ty, i'll tidy the rest up at some point)
 
 
 def check_in(request, restaurant_id):
