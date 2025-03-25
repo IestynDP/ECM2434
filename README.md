@@ -97,3 +97,5 @@ python manage.py test --verbosity=2
 ## 📜 [[LICENSE]](License)
 
 This project is licensed under the MIT License.
+
+Artwork for Logo provided by Stella Stewart
