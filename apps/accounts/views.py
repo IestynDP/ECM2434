@@ -34,6 +34,7 @@ def privacy_policy(request):
     return render(request, "accounts/privacy_policy.html", {"user": request.user})
 
 @login_required # Only logged in users can see the home page
+# sustainability fact for homepage
 def home(request):
     fun_facts = [
         "Recycling one ton of paper saves 17 trees! 🌳",
@@ -102,6 +103,7 @@ def leaderboard(request):
     return render(request, "leaderboard.html", {"top_players": top_players})
 
 
+# Articles with info for the info page
 def info(request):
     articles = [
         {
@@ -135,9 +137,9 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)  # Log the user in after registration
-            return redirect("home")  # Redirect to homepage (update as needed)
+            return redirect("home")  # Redirects to homepage
         else:
-            print(form.errors)  # Print form errors for debugging
+            print(form.errors)
     else:
         form = UserCreationForm()
     return render(request, "accounts/register.html", {"form": form})
@@ -216,7 +218,7 @@ def profile_view(request, username=None):
                             user_account.points -= purchaseitem.itemCost
                             user_account.save()
                 except items.DoesNotExist:
-                    pass  # If no corresponding item found
+                    pass
 
             if action_request[0] == "equip":
                 try:
@@ -234,11 +236,11 @@ def profile_view(request, username=None):
                                     equipState=True
                                 ).update(equipState=False)  # Disable other items in the same slot
 
-                                # Step 2: Equip the selected item (equipState=True)
+
                                 purchase_record.equipState = True
                                 purchase_record.save()
                                 
-                                # Set success flag to True
+
                                 success = True
                 except items.DoesNotExist:
                     pass
@@ -251,7 +253,7 @@ def profile_view(request, username=None):
         "owned": purchased_items,
         "purchaseable": not_purchased_items,
         "equipped_items": equipped_items,
-        "success": success  # Pass success flag to template
+        "success": success
     })
 
 

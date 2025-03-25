@@ -12,11 +12,11 @@ from django.contrib import messages
 
 
 
-# QR Scan View (just renders the scanner page)
+# QR Scan View (renders the scanner page)
 def qr_scan_view(request):
     return render(request, 'qr_scan/qr_scan.html')
 
-# Scan QR (you can include the logic of scanning here if needed)
+# Scan QR
 def scan_qr(request):
     return render(request, 'qr_scan/qr_scan.html')
 
@@ -41,12 +41,12 @@ def checkin_qrcode(request):
             if restaurant is None:
                 return JsonResponse({'success': False, 'message': 'Invalid QR Code'}, status=400)
 
-            # Use account instead of user
+
             account = request.user.account  # Get the associated account of the logged-in user
 
             # Check if the account has already checked in today
             user_check_in = UserCheckIn.objects.filter(
-                account=account,  # Changed to account
+                account=account,
                 restaurant=restaurant,
                 check_in_date=date.today()
             ).first()
@@ -85,7 +85,7 @@ def checkin_qrcode(request):
 
             # Record the check-in
             UserCheckIn.objects.create(
-                account=account,  # Changed to account
+                account=account,
                 restaurant=restaurant,
             )
 
@@ -94,7 +94,7 @@ def checkin_qrcode(request):
                 'already_scanned': False,
                 'restaurant_name': restaurant.name,
                 'points': restaurant.points,
-                'total_points': account.points,  # Changed to account
+                'total_points': account.points,
                 'badges': badge_messages
             })
         except Exception as e:

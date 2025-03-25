@@ -62,7 +62,7 @@ def submit_quiz(request, category_id):
         # Update user's points based on improved performance
         user_account = get_object_or_404(account, user=request.user)
         user_quiz_score, created = UserQuizScore.objects.get_or_create(user=request.user, category_id=category_id)
-        if score > user_quiz_score.highest_score:
+        if score > user_quiz_score.highest_score: # Only add points if user achieves a new quiz high score
             additional_points = points - user_quiz_score.highest_score // 20
             user_account.points += additional_points
             user_account.total_points += additional_points
